@@ -48,7 +48,7 @@ client.on('ready', () => {
         .on('mail', mail => {
 
             console.log(mail);
-            const profs = ['nicolas.garric@univ-jfc.fr', 'david.panzoli@univ-jfc.fr', 'laura.brillon@univ-jfc.fr', 'pierre.piccinini@ext.univ-jfc.fr', 'laurent.rouziere@ext.univ-jfc.fr'];
+            const profs = ['ne.pas.repondre@univ-jfc.fr','nicolas.garric@univ-jfc.fr', 'david.panzoli@univ-jfc.fr', 'laura.brillon@univ-jfc.fr', 'pierre.piccinini@ext.univ-jfc.fr', 'laurent.rouziere@ext.univ-jfc.fr'];
 
             if (profs.includes(mail.from[0].address) || mail.replyTo != undefined && mail.replyTo[0].address == "l2-info@listes.univ-jfc.fr") {
                 l2info = client.guilds.resolve('688085049912066057');
