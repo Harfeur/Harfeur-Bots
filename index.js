@@ -59,7 +59,7 @@ client.on('ready', () => {
                         .setTitle(mail.subject)
                         .setURL('https://scout.univ-toulouse.fr/')
                         .setAuthor(mail.from[0].name)
-                        .setDescription(mail.text)
+                        .setDescription(mail.text.substring(0, 2048))
                         .setThumbnail('https://authc.univ-toulouse.fr/assets/logos/old_unr-cb65b75066f2691ab0919abdfeb665b5.png')
                         .setTimestamp(mail.date)
                         .setFooter('Source : Mails Scout');
