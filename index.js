@@ -94,6 +94,15 @@ client.on('message', m => {
         m.delete();
         m.author.send("Demande envoyée avec succès");
     }
+
+    if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
+        arg = m.content.split(' ');
+        console.log(arg);
+        if (arg.length != 3) return;
+        m.guild.channels.resolve(arg[1]).members.forEach(member => {
+            member.voice.setChannel(arg[2]);
+        });
+    }
 });
 
 client.login(process.env.TOKEN);
