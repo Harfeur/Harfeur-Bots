@@ -79,5 +79,22 @@ client.on('ready', () => {
         .start();
 });
 
+client.on('message', m => {
+    if (m.author.bot) return;
+
+    if (m.channel.id == '690114667368284171') {
+        listeDemandes = m.guild.channels.resolve('690115414315106385');
+        listeDemandes.send("Demande de <@" + m.author.id +">");
+        listeDemandes.send(m.content)
+        if (m.attachments.size != 0) {
+            m.attachments.forEach(a => {
+                listeDemandes.send(a);
+            });
+        }
+        m.delete();
+        m.author.send("Demande envoyée avec succès");
+    }
+});
+
 client.login(process.env.TOKEN);
 
