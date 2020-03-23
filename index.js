@@ -155,6 +155,21 @@ client.on('message', m => {
         });
     };
 
+    if (m.mentions.channels) {
+        m.mentions.channels.forEach(channel => {
+            if (channel.name.startsWith("ticket-")) {
+                if (m.mentions.members) {
+                    m.mentions.members.forEach(member => {
+                        channel.permissionOverwrites.push({
+                            id: member.id,
+                            allow: ['VIEW_CHANNEL']
+                        });
+                    });
+                };
+            };
+        });
+    };
+
     if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
         arg = m.content.split(' ');
         console.log(arg);
