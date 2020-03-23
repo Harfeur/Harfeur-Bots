@@ -81,7 +81,7 @@ client.on('ready', () => {
 
 client.on('message', m => {
     if (m.author.bot) return;
-
+    
     if (m.channel.id == '690114667368284171') {
         listeDemandes = m.guild.channels.resolve('690115414315106385');
         listeDemandes.send("Demande de <@" + m.author.id +">");
@@ -94,7 +94,7 @@ client.on('message', m => {
         m.delete();
         m.author.send("Demande envoyée avec succès");
     }
-    
+
     if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
         arg = m.content.split(' ');
         console.log(arg);
