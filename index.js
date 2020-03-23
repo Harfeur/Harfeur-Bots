@@ -94,7 +94,7 @@ client.on('message', m => {
         m.delete();
         m.author.send("Demande envoyée avec succès");
     }
-
+    
     if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
         arg = m.content.split(' ');
         console.log(arg);
