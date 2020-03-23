@@ -52,7 +52,7 @@ client.on('ready', () => {
 
             if (profs.includes(mail.from[0].address) || mail.replyTo != undefined && mail.replyTo[0].address == "l2-info@listes.univ-jfc.fr") {
                 l2info = client.guilds.resolve('688085049912066057');
-                if (l2info.available) {
+                if (l2info.available && mail.text) {
 
                     const embed = new Discord.MessageEmbed()
                         .setColor('#ff542f')
