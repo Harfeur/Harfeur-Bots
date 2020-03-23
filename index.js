@@ -82,6 +82,10 @@ client.on('ready', () => {
 client.on('message', m => {
     if (m.author.bot) return;
 
+    if (m.content.toLowerCase().indexOf('panzoli') != -1) {
+        m.react('690536057887785010');
+    }
+
     if (m.channel.id == '690114667368284171') {
         listeDemandes = m.guild.channels.resolve('690115414315106385');
         listeDemandes.send("Demande de <@" + m.author.id +">");
