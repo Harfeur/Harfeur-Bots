@@ -103,11 +103,11 @@ client.on('message', m => {
                 
                 proc.stderr.on('data', function(data) {
                     m.reply("```\n" + data.toString() + "\n```");
-                });
+                }); 
 
                 start = new Date();
 
-                while (!proc.killed) {
+                while (proc.connected) {
                     if (Date.now() - start > 10000) {
                         m.reply('Temps d\'exécution limité à 10 secondes. Arrêt du code');
                         proc.kill('SIGKILL');
