@@ -3,6 +3,7 @@ if (process.argv[2] && process.argv[2] == "dev") require("custom-env").env();
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const notifier = require('mail-notifier');
+const fs = require('fs');
 
 process
     .on('SIGTERM', shutdown('SIGTERM'))
@@ -82,7 +83,41 @@ client.on('ready', () => {
 client.on('message', m => {
     if (m.author.bot) return;
 
-    if (m.content.toLowerCase().indexOf('panzoli') != -1) {
+    if (m.content.toLowerCase().includes('```py')) {
+        iStart = m.content.toLowerCase().indexOf('```py');
+        iEnd = m.content.indexOf('```', iStart+3);
+        
+        if (iEnd != -1) {
+            var code = m.content.substring(iStart+6, iEnd);
+            
+            var spawn = require("child_process").spawn;
+
+            var file = './' + Math.trunc(Math.random()*1000) + '.py';
+    
+            fs.writeFile(file, code, () => {
+                var proc = spawn('python',[file]);
+
+                proc.stdout.on('data', function(data) { 
+                    m.reply("```\n" + data.toString() + "\n```");
+                });
+                
+                proc.stderr.on('data', function(data) {
+                    m.reply("```\n" + data.toString() + "\n```");
+                });
+
+                start = new Date();
+
+                while (!proc.killed) {
+                    if (Date.now() - start > 10000) {
+                        m.reply('Temps d\'exécution limité à 10 secondes. Arrêt du code');
+                        proc.kill('SIGKILL');
+                    }
+                }
+            });
+        }
+    }
+
+    if (m.content.toLowerCase().includes('panzoli')) {
         m.react('690536057887785010');
     }
 
