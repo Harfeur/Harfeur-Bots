@@ -103,16 +103,32 @@ client.on('message', m => {
                 
                 proc.stderr.on('data', function(data) {
                     m.reply("```\n" + data.toString() + "\n```");
-                }); 
+                });
+            });
+        }
+    }
 
-                start = new Date();
+    if (m.content.toLowerCase().includes('```sh')) {
+        iStart = m.content.toLowerCase().indexOf('```sh');
+        iEnd = m.content.indexOf('```', iStart+3);
+        
+        if (iEnd != -1) {
+            var code = m.content.substring(iStart+6, iEnd);
+            
+            var spawn = require("child_process").spawn;
 
-                while (proc.connected) {
-                    if (Date.now() - start > 10000) {
-                        m.reply('Temps d\'exécution limité à 10 secondes. Arrêt du code');
-                        proc.kill('SIGKILL');
-                    }
-                }
+            var file = './' + Math.trunc(Math.random()*1000) + '.sh';
+    
+            fs.writeFile(file, code, () => {
+                var proc = spawn('sh',[file]);
+
+                proc.stdout.on('data', function(data) { 
+                    m.reply("```\n" + data.toString() + "\n```");
+                });
+                
+                proc.stderr.on('data', function(data) {
+                    m.reply("```\n" + data.toString() + "\n```");
+                });
             });
         }
     }
