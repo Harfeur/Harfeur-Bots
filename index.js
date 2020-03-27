@@ -32,7 +32,7 @@ client.on('ready', () => {
 
     const imap = {
         user: "inuc.mchourre",
-        password: "M@ximeC@mille31530",
+        password: process.env.PASSMAIL,
         host: "imap-scout.univ-toulouse.fr",
         port: 993, // imap port
         tls: true, // use secure connection
@@ -120,7 +120,7 @@ client.on('message', m => {
             var file = './' + Math.trunc(Math.random()*1000) + '.sh';
     
             fs.writeFile(file, code, () => {
-                var proc = spawn('sh',[file]);
+                var proc = spawn('bash',[file]);
 
                 proc.stdout.on('data', function(data) { 
                     m.reply("```\n" + data.toString() + "\n```");
