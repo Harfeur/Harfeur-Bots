@@ -89,6 +89,8 @@ client.on('message', m => {
         
         if (iEnd != -1) {
             var code = "# -*- coding: utf-8 -*-\n" + m.content.substring(iStart+6, iEnd);
+
+            var allText = "";
             
             var spawn = require("child_process").spawn;
 
@@ -98,12 +100,18 @@ client.on('message', m => {
                 var proc = spawn('python3',[file]);
 
                 proc.stdout.on('data', function(data) { 
+                    allText+=data.toString();
                     m.reply("```\n" + data.toString() + "\n```");
                 });
                 
                 proc.stderr.on('data', function(data) {
+                    allText+=data.toString();
                     m.reply("```\n" + data.toString() + "\n```");
                 });
+
+                proc.on('disconnect', () => {
+                    console.log(allText);
+                })
             });
         }
     }
