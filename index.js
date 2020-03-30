@@ -95,7 +95,7 @@ client.on('message', m => {
             var file = './' + Math.trunc(Math.random()*1000) + '.py';
     
             fs.writeFile(file, code, () => {
-                var proc = spawn('python',[file]);
+                var proc = spawn('python3',[file]);
 
                 proc.stdout.on('data', function(data) { 
                     m.reply("```\n" + data.toString() + "\n```");
