@@ -88,7 +88,7 @@ client.on('message', m => {
         iEnd = m.content.indexOf('```', iStart+3);
         
         if (iEnd != -1) {
-            var code = m.content.substring(iStart+6, iEnd);
+            var code = "# -*- coding: utf-8 -*-\n" + m.content.substring(iStart+6, iEnd);
             
             var spawn = require("child_process").spawn;
 
