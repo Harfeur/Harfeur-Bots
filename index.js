@@ -141,7 +141,7 @@ client.on('message', m => {
         }
     }
 
-    if (m.content.toLowerCase().includes('panzoli')) {
+    if (m.guild.id == '688085049912066057') {
         m.react('690536057887785010');
     }
 
