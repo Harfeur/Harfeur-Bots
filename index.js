@@ -223,10 +223,20 @@ client.on('message', m => {
             if (channel.name.startsWith("ticket-")) {
                 if (m.mentions.members) {
                     m.mentions.members.forEach(member => {
-                        channel.permissionOverwrites.push({
+                        /*
+                        permissions = channel.permissionOverwrites;
+                        perm = new Discord.PermissionOverwrites(channel, {
                             id: member.id,
-                            allow: ['VIEW_CHANNEL']
+                            allow: ['VIEW_CHANNEL'],
+                            type: "member"
                         });
+                        permissions.set(member.id, perm)
+                        channel.overwritePermissions(permissions);
+                        */
+                        channel.updateOverwrite(member, {
+                            VIEW_CHANNEL: true
+                        });
+                        channel.send(`Bienvenue à <@${member.id}> sur le canal !`);
                     });
                 };
             };
