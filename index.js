@@ -141,10 +141,8 @@ client.on('message', m => {
         }
     }
 
-    if (m.guild.id == '688085049912066057') {
+    if (m.content.toLowerCase().includes('panzoli')) {
         m.react('690536057887785010');
-        m.react('694836294450413658');
-        m.react('694883934856544277');
     }
 
     if (m.channel.id == '690114667368284171') {
