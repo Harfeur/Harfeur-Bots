@@ -1,7 +1,13 @@
 if (process.argv[2] && process.argv[2] == "dev") require("custom-env").env();
 
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const twitch = require('twitch-api-v5');
+
+/**
+ * Guichet Unique
+ */
+
+const guichetUnique = new Discord.Client();
 const notifier = require('mail-notifier');
 const fs = require('fs');
 
@@ -13,10 +19,10 @@ process
 function shutdown(signal) {
     return (err) => {
         console.log(`${ signal }...`);
-        client.users.resolve('327939742840913921').send('Arrêt en cours');
+        guichetUnique.users.resolve('327939742840913921').send('Arrêt en cours');
         if (err.name != undefined) {
             console.error(err.stack || err);
-            client.users.resolve('327939742840913921').send(`Erreur : ${err.name} \`\`\`${err.message}\`\`\``);
+            guichetUnique.users.resolve('327939742840913921').send(`Erreur : ${err.name} \`\`\`${err.message}\`\`\``);
         }
         setTimeout(() => {
             console.log('...waited 5s, exiting.');
@@ -26,9 +32,9 @@ function shutdown(signal) {
 }
 
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    client.users.resolve('327939742840913921').send('Bot démarré');
+guichetUnique.on('ready', () => {
+    console.log(`Logged in as ${guichetUnique.user.tag}!`);
+    guichetUnique.users.resolve('327939742840913921').send('Bot démarré');
 
     const imap = {
         user: "inuc.mchourre",
@@ -52,7 +58,7 @@ client.on('ready', () => {
             const profs = ['ne.pas.repondre@univ-jfc.fr', 'nicolas.garric@univ-jfc.fr', 'david.panzoli@univ-jfc.fr', 'laura.brillon@univ-jfc.fr', 'pierre.piccinini@ext.univ-jfc.fr', 'laurent.rouziere@ext.univ-jfc.fr'];
 
             if (profs.includes(mail.from[0].address) || mail.replyTo != undefined && mail.replyTo[0].address == "l2-info@listes.univ-jfc.fr") {
-                l2info = client.guilds.resolve('688085049912066057');
+                l2info = guichetUnique.guilds.resolve('688085049912066057');
                 if (l2info.available && mail.text) {
 
                     const embed = new Discord.MessageEmbed()
@@ -80,7 +86,7 @@ client.on('ready', () => {
         .start();
 });
 
-client.on('message', m => {
+guichetUnique.on('message', m => {
     if (m.author.bot) return;
 
     if (m.content.toLowerCase().includes('```py')) {
@@ -257,4 +263,66 @@ client.on('message', m => {
     }
 });
 
-client.login(process.env.TOKEN);
+guichetUnique.login(process.env.TOKEN);
+
+/**
+ * Partie du ElviBot
+ */
+
+twitch.clientID = 'yjqm4c8rqqhot9stewszikp7z98jz3';
+
+const elviBot = new Discord.Client();
+
+function fetchLive() {
+    twitch.streams.channel({
+        channelID: '23217261'
+    }, (err, res) => {
+        if (err) {
+            console.error(err);
+        } else {
+            
+            var serveur = elviBot.guilds.resolve('637315966631542801');
+            var canal = serveur.channels.resolve('637315966631542809');
+    
+            if (res.stream != null) {
+                now = Date.now()
+                debut = new Date(res.stream.created_at)
+    
+                if (now - debut < 200000) {
+                    canal.send(`@everyone Elvi est en LIVE !! Aujourd'hui, c'est ${res.stream.game} !! Allez, je vous file le lien : ${res.stream.channel.url}`);
+                    canal.setName("📌en-live")
+                }
+                elviBot.user.setPresence({activity: {name: "Elvi est en LIVE", type: "STREAMING", url: res.stream.channel.url}});
+            } else {
+                if (canal.name.includes("en-live")) {
+                    canal.setName("📌annonces-stream");
+                    canal.messages.fetch({ limit: 10 })
+                    .then(messages => {
+                        for (let index = 0; index < messages.array.length; index++) {
+                            const message = messages.array[index];
+                            if (message.author.id == elviBot.user.id) {
+                                message.edit("Oh non, le LIVE est terminé :( mais tu peux revoir tous mes replays ici : <https://www.twitch.tv/mrelvilia/videos>")
+                            }
+                        }
+                    })
+                    .catch(console.error);
+                    elviBot.user.setPresence(null);
+                }
+            }
+        }
+    });
+}
+
+elviBot.on('ready', () => {
+    console.log("Bot démarré");
+    setInterval(() => {
+        fetchLive();
+    }, 200000);
+});
+
+elviBot.on('message', message => {
+    if (message.author.bot) return;
+    message.reply("Recu");
+});
+
+elviBot.login(process.env.ELVIBOT);
