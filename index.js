@@ -300,9 +300,6 @@ function fetchLive() {
                     "footer": {
                         "text": "Depuis"
                     },
-                    "image": {
-                        "url": res.stream.preview.large
-                    },
                     "author": {
                         "name": "Twitch",
                         "url": res.stream.channel.url,
@@ -325,7 +322,12 @@ function fetchLive() {
                     ]
                 });
 
-                if (now - debut < 200000) {
+                if (res.stream.channel.game == "SnowRunner")
+                    embed.setImage("https://www.micromania.fr/on/demandware.static/-/Sites-Micromania-Library/default/dwf68784c2/fanzone/dossier/snowrunner/snowrunner-temps_Header.jpg");
+                else if (res.stream.channel.game == "Hydroneer")
+                    embed.setImage("https://steamcdn-a.akamaihd.net/steam/apps/1106840/header.jpg");
+
+                if (now - debut < 120000) {
                     //canal.send(`@everyone Elvi est en LIVE !! Aujourd'hui, c'est ${res.stream.game} !! Allez, je vous file le lien : ${res.stream.channel.url}`);
                     canal.send("@everyone Hey ! Elvi est en LIVE sur Twitch ;) Regarde ça !\n<https://www.twitch.tv/mrelvilia>", {
                         "embed": embed
@@ -370,7 +372,7 @@ elviBot.on('ready', () => {
     console.log(`Bot ${elviBot.user.tag} démarré !`);
     setInterval(() => {
         fetchLive();
-    }, 200000);
+    }, 120000);
 });
 
 elviBot.login(process.env.ELVIBOT);
