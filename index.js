@@ -33,7 +33,7 @@ function shutdown(signal) {
 
 
 guichetUnique.on('ready', () => {
-    console.log(`Logged in as ${guichetUnique.user.tag}!`);
+    console.log(`Bot ${guichetUnique.user.tag} démarré !`);
     guichetUnique.users.resolve('327939742840913921').send('Bot démarré');
 
     const imap = {
@@ -273,12 +273,6 @@ twitch.clientID = 'yjqm4c8rqqhot9stewszikp7z98jz3';
 
 const elviBot = new Discord.Client();
 
-twitch.streams.channel({
-    channelID: '23217261'
-}, (err, res) => {
-    console.log(res);
-});
-
 function fetchLive() {
     twitch.streams.channel({
         channelID: '23217261'
@@ -286,8 +280,10 @@ function fetchLive() {
         if (err) {
             console.error(err);
         } else {
-            var serveur = elviBot.guilds.resolve('637315966631542801');
-            var canal = serveur.channels.resolve('637315966631542809');
+            var serveur = elviBot.guilds.resolve('606951801731940352');
+            if (serveur == null || !serveur.available) return;
+            var canal = serveur.channels.resolve('607142584011325441');
+            if (canal == null) return;
 
             if (res.stream != null) {
                 now = Date.now()
@@ -371,7 +367,7 @@ function fetchLive() {
 }
 
 elviBot.on('ready', () => {
-    console.log("Bot démarré");
+    console.log(`Bot ${elviBot.user.tag} démarré !`);
     setInterval(() => {
         fetchLive();
     }, 200000);
