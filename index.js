@@ -373,9 +373,4 @@ elviBot.on('ready', () => {
     }, 200000);
 });
 
-elviBot.on('message', message => {
-    if (message.author.bot) return;
-    message.reply("Recu");
-});
-
 elviBot.login(process.env.ELVIBOT);
