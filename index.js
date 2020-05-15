@@ -328,7 +328,7 @@ function fetchLive() {
                         },
                         {
                             "name": "Durée",
-                            "value": `${heures} h ${minutes} min.`,
+                            "value": `${heures} h ${minutes} min`,
                             "inline": true
                         },
                         {
