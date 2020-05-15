@@ -301,7 +301,7 @@ function fetchLive() {
                 var embed = new Discord.MessageEmbed({
                     "color": 9442302,
                     "timestamp": res.stream.created_at,
-                    "title": "Elvi est en LIVE",
+                    "title": "🔴Elvi est en LIVE",
                     "url": res.stream.channel.url,
                     "thumbnail": {
                         "url": res.stream.channel.logo
@@ -378,8 +378,10 @@ function fetchLive() {
                             for (let index = 0; index < messages.array().length; index++) {
                                 var message = messages.array()[index];
                                 if (message.author.id == elviBot.user.id) {
-                                    if (message.embed.length > 0) {
+                                    if (message.embeds.length > 0) {
                                         var embed = message.embeds[0]
+                                        embed.setTitle("LIVE terminé");
+                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
                                         message.edit("Oh non, le LIVE est terminé :( mais tu peux revoir tous les replays ici : <https://www.twitch.tv/mrelvilia/videos>", {
                                             "embed": embed
                                         });
