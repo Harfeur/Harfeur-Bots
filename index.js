@@ -91,27 +91,27 @@ guichetUnique.on('message', m => {
 
     if (m.content.toLowerCase().includes('```py')) {
         iStart = m.content.toLowerCase().indexOf('```py');
-        iEnd = m.content.indexOf('```', iStart+3);
-        
+        iEnd = m.content.indexOf('```', iStart + 3);
+
         if (iEnd != -1) {
-            var code = "# -*- coding: utf-8 -*-\n" + m.content.substring(iStart+6, iEnd);
+            var code = "# -*- coding: utf-8 -*-\n" + m.content.substring(iStart + 6, iEnd);
 
             var allText = "";
-            
+
             var spawn = require("child_process").spawn;
 
-            var file = './' + Math.trunc(Math.random()*1000) + '.py';
-    
-            fs.writeFile(file, code, () => {
-                var proc = spawn('python3',[file]);
+            var file = './' + Math.trunc(Math.random() * 1000) + '.py';
 
-                proc.stdout.on('data', function(data) { 
-                    allText+=data.toString();
+            fs.writeFile(file, code, () => {
+                var proc = spawn('python3', [file]);
+
+                proc.stdout.on('data', function (data) {
+                    allText += data.toString();
                     m.reply("```\n" + data.toString() + "\n```");
                 });
-                
-                proc.stderr.on('data', function(data) {
-                    allText+=data.toString();
+
+                proc.stderr.on('data', function (data) {
+                    allText += data.toString();
                     m.reply("```\n" + data.toString() + "\n```");
                 });
 
@@ -124,23 +124,23 @@ guichetUnique.on('message', m => {
 
     if (m.content.toLowerCase().includes('```sh')) {
         iStart = m.content.toLowerCase().indexOf('```sh');
-        iEnd = m.content.indexOf('```', iStart+3);
-        
+        iEnd = m.content.indexOf('```', iStart + 3);
+
         if (iEnd != -1) {
-            var code = m.content.substring(iStart+6, iEnd);
-            
+            var code = m.content.substring(iStart + 6, iEnd);
+
             var spawn = require("child_process").spawn;
 
-            var file = './' + Math.trunc(Math.random()*1000) + '.sh';
-    
-            fs.writeFile(file, code, () => {
-                var proc = spawn('bash',[file]);
+            var file = './' + Math.trunc(Math.random() * 1000) + '.sh';
 
-                proc.stdout.on('data', function(data) { 
+            fs.writeFile(file, code, () => {
+                var proc = spawn('bash', [file]);
+
+                proc.stdout.on('data', function (data) {
                     m.reply("```\n" + data.toString() + "\n```");
                 });
-                
-                proc.stderr.on('data', function(data) {
+
+                proc.stderr.on('data', function (data) {
                     m.reply("```\n" + data.toString() + "\n```");
                 });
             });
@@ -153,7 +153,7 @@ guichetUnique.on('message', m => {
 
     if (m.channel.id == '690114667368284171') {
         listeDemandes = m.guild.channels.resolve('690115414315106385');
-        listeDemandes.send("Demande de <@" + m.author.id +">");
+        listeDemandes.send("Demande de <@" + m.author.id + ">");
         listeDemandes.send(m.content)
         if (m.attachments.size != 0) {
             m.attachments.forEach(a => {
@@ -192,10 +192,14 @@ guichetUnique.on('message', m => {
 
         if (!prof) {
             m.reply('Vous devez mentionner (avec @) au moins un enseignant. Une fois @ écrit, commencer à taper le nom, puis cliquez sur le résultat correspondant')
-            .then(msg => {
-                msg.delete({timeout:20000})
+                .then(msg => {
+                    msg.delete({
+                        timeout: 20000
+                    })
+                });
+            m.delete({
+                timeout: 10000
             });
-            m.delete({timeout:10000});
             return;
         }
 
@@ -204,8 +208,8 @@ guichetUnique.on('message', m => {
             permissionOverwrites: permissions
         }).then(channel => {
             welcome = "Pour ajouter un utilisateur dans ce ticket, mentionez le ailleurs en mentionnant ce canal.\n";
-            welcome+= "Pour fermer et supprimer le ticket, faites `.fermer`\n";
-            welcome+= "Bon travail !";
+            welcome += "Pour fermer et supprimer le ticket, faites `.fermer`\n";
+            welcome += "Bon travail !";
             channel.send(welcome);
 
             acces = "Les personnes ayant actuellement accès à ce canal sont :";
@@ -217,9 +221,11 @@ guichetUnique.on('message', m => {
             channel.send(acces);
 
             m.reply(`Nouveau ticket créé : <#${channel.id}>`)
-            .then(msg => {
-                msg.delete({timeout:60000})
-            });
+                .then(msg => {
+                    msg.delete({
+                        timeout: 60000
+                    })
+                });
             m.delete();
         });
     };
@@ -257,7 +263,7 @@ guichetUnique.on('message', m => {
             member.voice.setChannel(arg[2]);
         });
     }
-    
+
     if (m.content.startsWith('.fermer') && m.channel.name.startsWith("ticket-")) {
         m.channel.delete("Suppression demandée par " + m.member.nickname);
     }
@@ -286,8 +292,11 @@ function fetchLive() {
             if (canal == null) return;
 
             if (res.stream != null) {
-                now = Date.now()
-                debut = new Date(res.stream.created_at)
+                var now = Date.now()
+                var debut = new Date(res.stream.created_at)
+
+                var heures = Math.trunc(((now - debut) / 60000) / 60);
+                var minutes = Math.trunc((now - debut) / 60000 - heures * 60)
 
                 var embed = new Discord.MessageEmbed({
                     "color": 9442302,
@@ -315,6 +324,11 @@ function fetchLive() {
                             "inline": true
                         },
                         {
+                            "name": "Durée",
+                            "value": `${heures} h ${minutes} min.`,
+                            "inline": true
+                        },
+                        {
                             "name": "Viewers",
                             "value": res.stream.viewers,
                             "inline": true
@@ -335,20 +349,20 @@ function fetchLive() {
                     canal.setName("📌en-live");
                 } else {
                     canal.messages.fetch({
-                        limit: 10
-                    })
-                    .then(messages => {
-                        for (let index = 0; index < messages.array().length; index++) {
-                            const message = messages.array()[index];
-                            if (message.author.id == elviBot.user.id) {
-                                message.edit("@everyone Hey !!! Elvi est en LIVE sur Twitch ;) Regarde ça !\n<https://www.twitch.tv/mrelvilia>", {
-                                    "embed": embed
-                                });
-                                break;
+                            limit: 10
+                        })
+                        .then(messages => {
+                            for (let index = 0; index < messages.array().length; index++) {
+                                const message = messages.array()[index];
+                                if (message.author.id == elviBot.user.id) {
+                                    message.edit("@everyone Hey !!! Elvi est en LIVE sur Twitch ;) Regarde ça !\n<https://www.twitch.tv/mrelvilia>", {
+                                        "embed": embed
+                                    });
+                                    break;
+                                }
                             }
-                        }
-                    })
-                    .catch(console.error);
+                        })
+                        .catch(console.error);
                 }
                 elviBot.user.setPresence({
                     activity: {
@@ -360,7 +374,26 @@ function fetchLive() {
             } else {
                 if (canal.name.includes("en-live")) {
                     canal.setName("📌annonces-stream");
-                    canal.send("Oh non, le LIVE est terminé :( mais tu peux revoir tous les replays ici : <https://www.twitch.tv/mrelvilia/videos>")
+                    canal.messages.fetch({
+                            limit: 10
+                        })
+                        .then(messages => {
+                            for (let index = 0; index < messages.array().length; index++) {
+                                var message = messages.array()[index];
+                                if (message.author.id == elviBot.user.id) {
+                                    if (message.embed.length > 0) {
+                                        var embed = message.embeds[0]
+                                        message.edit("Oh non, le LIVE est terminé :( mais tu peux revoir tous les replays ici : <https://www.twitch.tv/mrelvilia/videos>", {
+                                            "embed": embed
+                                        });
+                                    } else {
+                                        message.edit("Oh non, le LIVE est terminé :( mais tu peux revoir tous les replays ici : <https://www.twitch.tv/mrelvilia/videos>");
+                                    }
+                                    break;
+                                }
+                            }
+                        })
+                        .catch(console.error);
                     elviBot.user.setPresence(null);
                 }
             }
