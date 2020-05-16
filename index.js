@@ -301,7 +301,7 @@ function fetchLive() {
                     for (let index = 0; index < messages.array().length; index++) {
                         const message = messages.array()[index];
                         if (message.author.id == elviBot.user.id) {
-                            if (message.content.includes(MESSAGE_LIVE)) {
+                            if (!message.content.includes(MESSAGE_LIVE)) {
                                 if (res.stream != null) {
                                     var now = Date.now()
                                     var debut = new Date(res.stream.created_at)
@@ -407,6 +407,7 @@ function fetchLive() {
 
 elviBot.on('ready', () => {
     console.log(`Bot ${elviBot.user.tag} démarré !`);
+    fetchLive();
     setInterval(() => {
         fetchLive();
     }, 120000);
