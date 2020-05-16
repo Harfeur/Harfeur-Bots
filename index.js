@@ -279,6 +279,9 @@ twitch.clientID = 'yjqm4c8rqqhot9stewszikp7z98jz3';
 
 const elviBot = new Discord.Client();
 
+const MESSAGE_LIVE = 'Hey !!! Elvi est en LIVE sur Twitch ;) Regarde ça !';
+const MESSAGE_FIN = '';
+
 function fetchLive() {
     twitch.streams.channel({
         channelID: '23217261'
@@ -291,122 +294,113 @@ function fetchLive() {
             var canal = serveur.channels.resolve('607142584011325441');
             if (canal == null) return;
 
-            if (res.stream != null) {
-                var now = Date.now()
-                var debut = new Date(res.stream.created_at)
+            canal.messages.fetch({
+                    limit: 10
+                })
+                .then(messages => {
+                    for (let index = 0; index < messages.array().length; index++) {
+                        const message = messages.array()[index];
+                        if (message.author.id == elviBot.user.id) {
+                            if (message.content.includes(MESSAGE_LIVE)) {
+                                if (res.stream != null) {
+                                    var now = Date.now()
+                                    var debut = new Date(res.stream.created_at)
 
-                var heures = Math.trunc(((now - debut) / 60000) / 60);
-                var minutes = Math.trunc((now - debut) / 60000 - heures * 60)
+                                    var heures = Math.trunc(((now - debut) / 60000) / 60);
+                                    var minutes = Math.trunc((now - debut) / 60000 - heures * 60)
 
-                var embed = new Discord.MessageEmbed({
-                    "color": 9442302,
-                    "timestamp": res.stream.created_at,
-                    "title": "🔴Elvi est en LIVE",
-                    "url": res.stream.channel.url,
-                    "thumbnail": {
-                        "url": res.stream.channel.logo
-                    },
-                    "image": {
-                        "url": `https://static-cdn.jtvnw.net/ttv-boxart/${res.stream.channel.game}-272x380.jpg`
-                    },
-                    "footer": {
-                        "text": "Début"
-                    },
-                    "author": {
-                        "name": "Twitch",
-                        "url": res.stream.channel.url,
-                        "icon_url": "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
-                    },
-                    "fields": [{
-                            "name": "Status",
-                            "value": res.stream.channel.status
-                        },
-                        {
-                            "name": "Jeu",
-                            "value": res.stream.channel.game,
-                            "inline": true
-                        },
-                        {
-                            "name": "Durée",
-                            "value": `${heures} h ${minutes} min`,
-                            "inline": true
-                        },
-                        {
-                            "name": "Viewers",
-                            "value": res.stream.viewers,
-                            "inline": true
-                        }
-                    ]
-                });
-                if (now - debut < 120000) {
-                    //canal.send(`@everyone Elvi est en LIVE !! Aujourd'hui, c'est ${res.stream.game} !! Allez, je vous file le lien : ${res.stream.channel.url}`);
-                    canal.send("@everyone Hey ! Elvi est en LIVE sur Twitch ;) Regarde ça !\n<https://www.twitch.tv/mrelvilia>", {
-                        "embed": embed
-                    });
-                    canal.setName("📌en-live");
-                } else {
-                    canal.messages.fetch({
-                            limit: 10
-                        })
-                        .then(messages => {
-                            for (let index = 0; index < messages.array().length; index++) {
-                                const message = messages.array()[index];
-                                if (message.author.id == elviBot.user.id) {
-                                    message.edit("@everyone Hey !!! Elvi est en LIVE sur Twitch ;) Regarde ça !\n<https://www.twitch.tv/mrelvilia>", {
-                                        "embed": embed
-                                    });
-                                    break;
-                                }
-                            }
-                        })
-                        .catch(console.error);
-                }
-                elviBot.user.setPresence({
-                    activity: {
-                        name: "Elvi est en LIVE",
-                        type: "STREAMING",
-                        url: res.stream.channel.url
-                    }
-                });
-            } else {
-                if (canal.name.includes("en-live")) {
-                    canal.setName("📌annonces-stream");
-                    canal.messages.fetch({
-                            limit: 10
-                        })
-                        .then(messages => {
-                            for (let index = 0; index < messages.array().length; index++) {
-                                var message = messages.array()[index];
-                                if (message.author.id == elviBot.user.id) {
-                                    twitch.channels.videos({
-                                        channelID: '23217261',
-                                        limit: 1,
-                                        broadcast_type: 'archive'
-                                    }, (err, res2) => {
-                                        if (err) console.error(err);
-                                        else {
-                                            if (message.embeds.length > 0) {
-                                                var embed = message.embeds[0]
-                                                embed.setTitle("LIVE terminé");
-                                                embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                                embed.setURL(res2.videos[0].url);
-                                                message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`, {
-                                                    "embed": embed
-                                                });
-                                            } else {
-                                                message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`);
+                                    var embed = new Discord.MessageEmbed({
+                                        "color": 9442302,
+                                        "timestamp": res.stream.created_at,
+                                        "title": "🔴Elvi est en LIVE",
+                                        "url": res.stream.channel.url,
+                                        "thumbnail": {
+                                            "url": res.stream.channel.logo
+                                        },
+                                        "image": {
+                                            "url": `https://static-cdn.jtvnw.net/ttv-boxart/${res.stream.channel.game}-272x380.jpg`
+                                        },
+                                        "footer": {
+                                            "text": "Début"
+                                        },
+                                        "author": {
+                                            "name": "Twitch",
+                                            "url": res.stream.channel.url,
+                                            "icon_url": "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
+                                        },
+                                        "fields": [{
+                                                "name": "Status",
+                                                "value": res.stream.channel.status
+                                            },
+                                            {
+                                                "name": "Jeu",
+                                                "value": res.stream.channel.game,
+                                                "inline": true
+                                            },
+                                            {
+                                                "name": "Durée",
+                                                "value": `${heures} h ${minutes} min`,
+                                                "inline": true
+                                            },
+                                            {
+                                                "name": "Viewers",
+                                                "value": res.stream.viewers,
+                                                "inline": true
                                             }
-
+                                        ]
+                                    });
+                                    if (!message.content.includes(MESSAGE_LIVE)) {
+                                        //canal.send(`@everyone Elvi est en LIVE !! Aujourd'hui, c'est ${res.stream.game} !! Allez, je vous file le lien : ${res.stream.channel.url}`);
+                                        canal.send("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/mrelvilia>", {
+                                            "embed": embed
+                                        });
+                                        canal.setName("📌en-live");
+                                    } else {
+                                        message.edit("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/mrelvilia>", {
+                                            "embed": embed
+                                        });
+                                    }
+                                    elviBot.user.setPresence({
+                                        activity: {
+                                            name: "Elvi est en LIVE",
+                                            type: "STREAMING",
+                                            url: res.stream.channel.url
                                         }
                                     });
-                                    break;
+                                } else {
+                                    if (canal.name.includes("en-live")) {
+                                        canal.setName("📌annonces-stream");
+
+                                        twitch.channels.videos({
+                                            channelID: '23217261',
+                                            limit: 1,
+                                            broadcast_type: 'archive'
+                                        }, (err, res2) => {
+                                            if (err) console.error(err);
+                                            else {
+                                                if (message.embeds.length > 0) {
+                                                    var embed = message.embeds[0]
+                                                    embed.setTitle("LIVE terminé");
+                                                    embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                                    embed.setURL(res2.videos[0].url);
+                                                    message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`, {
+                                                        "embed": embed
+                                                    });
+                                                } else {
+                                                    message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`);
+                                                }
+
+                                            }
+                                        });
+                                        elviBot.user.setPresence(null);
+                                    }
                                 }
                             }
-                        })
-                        .catch(console.error);
-                    elviBot.user.setPresence(null);
-                }
-            }
+                        }
+                        break;
+                    }
+                })
+                .catch(console.error);
         }
     });
 }
