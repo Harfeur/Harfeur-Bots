@@ -407,7 +407,6 @@ function fetchLive() {
 
 elviBot.on('ready', () => {
     console.log(`Bot ${elviBot.user.tag} démarré !`);
-    fetchLive();
     setInterval(() => {
         fetchLive();
     }, 120000);
