@@ -392,7 +392,7 @@ function fetchLive() {
 
                                             }
                                         });
-                                        elviBot.user.setPresence(null);
+                                        elviBot.user.setActivity(null);
                                     }
                                 }
                             }
