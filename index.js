@@ -310,7 +310,7 @@ function fetchLive() {
                         "url": `https://static-cdn.jtvnw.net/ttv-boxart/${res.stream.channel.game}-272x380.jpg`
                     },
                     "footer": {
-                        "text": "Depuis"
+                        "text": "Début"
                     },
                     "author": {
                         "name": "Twitch",
@@ -378,16 +378,27 @@ function fetchLive() {
                             for (let index = 0; index < messages.array().length; index++) {
                                 var message = messages.array()[index];
                                 if (message.author.id == elviBot.user.id) {
-                                    if (message.embeds.length > 0) {
-                                        var embed = message.embeds[0]
-                                        embed.setTitle("LIVE terminé");
-                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                        message.edit("Oh non, le LIVE est terminé :( mais tu peux revoir tous les replays ici : <https://www.twitch.tv/mrelvilia/videos>", {
-                                            "embed": embed
-                                        });
-                                    } else {
-                                        message.edit("Oh non, le LIVE est terminé :( mais tu peux revoir tous les replays ici : <https://www.twitch.tv/mrelvilia/videos>");
-                                    }
+                                    twitch.channels.videos({
+                                        channelID: '23217261',
+                                        limit: 1,
+                                        broadcast_type: 'archive'
+                                    }, (err, res2) => {
+                                        if (err) console.error(err);
+                                        else {
+                                            if (message.embeds.length > 0) {
+                                                var embed = message.embeds[0]
+                                                embed.setTitle("LIVE terminé");
+                                                embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                                embed.setURL(res2.videos[0].url);
+                                                message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`, {
+                                                    "embed": embed
+                                                });
+                                            } else {
+                                                message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`);
+                                            }
+
+                                        }
+                                    });
                                     break;
                                 }
                             }
