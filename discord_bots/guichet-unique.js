@@ -243,4 +243,5 @@ exports.run = async () => {
         }
     });
 
+    guichetUnique.login(process.env.GUICHET_UNIQUE);
 }
