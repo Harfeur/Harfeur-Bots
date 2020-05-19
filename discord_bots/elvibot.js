@@ -46,7 +46,7 @@ exports.run = () => {
                                             "url": res.stream.channel.logo
                                         },
                                         "image": {
-                                            "url": `https://static-cdn.jtvnw.net/ttv-boxart/${res.stream.channel.game.replace(' ', "%20")}-272x380.jpg`
+                                            "url": `https://static-cdn.jtvnw.net/ttv-boxart/${res.stream.channel.game.split(" ").join("%20")}-272x380.jpg`
                                         },
                                         "footer": {
                                             "text": "Début"
