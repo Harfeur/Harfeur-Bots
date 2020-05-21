@@ -28,12 +28,10 @@ exports.run = () => {
 
         // Remove whitespace from chat message
         const commandName = msg.trim().toLowerCase();
-        /*
         console.log(target);
         console.log(context);
         console.log(msg);
         console.log('');
-        */
         // If the command is known, let's execute it
         if (commandName === '!bo') {
             var now = Date.now();
@@ -58,48 +56,44 @@ exports.run = () => {
     twitchBot.on("subscription", (channel, username, method, message, userstate) => {
         console.log("Subscription");
         console.log(method);
+        console.log(userstate);
 
-        twitchBot.say(channel, `Merci beaucoup à ${username} de s'être abonné !! Et bienvenue à toi !! elviSub elviSub elviSub`);
+        twitchBot.say(channel, `Merci beaucoup ${username} pour le sub !! Et bienvenue à toi !! elviSub elviSub elviSub`);
     });
 
     twitchBot.on("resub", (channel, username, months, message, userstate, methods) => {
         console.log("Resub");
+        console.log(userstate);
         console.log(methods);
 
         let msg = "";
-        if (months >= 1) msg = `${months} mois à la suite !! Tu gères ;) `;
-
-        twitchBot.say(channel, `Merci beaucoup à ${username} d'avoir continué de s'abonner !! ${msg}elviSub elviSub elviSub`);
+        if (months >= 1) twitchBot.say(channel, `Merci beaucoup ${username} d'avoir resub !! ${months} mois à la suite !! Tu gères elviSub elviSub elviSub`);
+        else twitchBot.say(channel, `Merci beaucoup ${username} pour le resub !! elviSub elviSub elviSub`);
     });
 
     twitchBot.on("subgift", (channel, username, streakMonths, recipient, methods, userstate) => {
         console.log("Gift");
+        console.log(userstate);
         console.log(methods);
-        twitchBot.say(channel, `Merci beaucoup à ${username} d'avoir fourni un abonnement à ${recipient} !! elviSub elviSub elviSub`);
+        twitchBot.say(channel, `Merci beaucoup ${username} d'avoir offert un sub à ${recipient} !! elviSub elviSub elviSub`);
     });
 
     twitchBot.on("timeout", (channel, username, reason, duration, userstate) => {
         console.log("TO");
+        console.log(userstate);
         if (duration != 0)
-            twitchBot.say(channel, `Bye bye ${username} elviHey On te rend la parole dans ${duration} secondes`)
+            twitchBot.say(channel, `Bye bye ${username} elviHey Tu pourras reparler dans ${duration} secondes.`)
     });
 
     twitchBot.on("raided", (channel, username, viewers) => {
         console.log("RAID");
-        twitchBot.say(channel, `${viewers} futurs abonnés potentiels viennent d'arriver de la part de ${username} ! elviHey elviHey`)
+        twitchBot.say(channel, `${viewers} futurs subs potentiels viennent d'arriver via ${username} ! elviHey elviHey`)
     });
 
     twitchBot.on("ban", (channel, username, reason, userstate) => {
-        console.log("BAN");w
-        twitchBot.say(channel, `${username}, la tribue réunifiée a décidé à l'unanimité de vous éliminer, et leur sentance est irrévocable.`);
-    });
-
-    twitchBot.on("giftpaidupgrade", (channel, username, sender, userstate) => {
-        twitchBot.say(channel, `Il semblerait que le sub offert par ${sender} ait plu à ${username} ! C'est pourquoi il a décidé de continuer son abonnement !! elviSub elviSub elviSub`);
-    });
-
-    twitchBot.on("anongiftpaidupgrade", (channel, username, userstate) => {
-        twitchBot.say(channel, `Il semblerait que le sub offert par un utilisateur anonyme ait plu à ${username} ! C'est pourquoi il a décidé de continuer son abonnement !! elviSub elviSub elviSub`);
+        console.log("BAN");
+        console.log(userstate);
+        twitchBot.say(channel, `${username}, la tribu réunifiée a décidé de vous éliminer, et leur sentence est irrévocable.`);
     });
 
     twitchBot.on('connected', (addr, port) => {
