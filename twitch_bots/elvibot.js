@@ -96,6 +96,13 @@ exports.run = () => {
         twitchBot.say(channel, `${username}, la tribu réunifiée a décidé de vous éliminer, et leur sentence est irrévocable.`);
     });
 
+    twitchBot.on("submysterygift", (channel, username, numbOfSubs, methods, userstate) => {
+        console.log("Gift++");
+        console.log(userstate);
+        console.log(methods);
+        twitchBot.say(channel, `OMG ${username} offre ${numbOfSubs} subs à la commu ! Débisous et merci à lui !! elviSub elviSub elviSub`);
+    });
+
     twitchBot.on('connected', (addr, port) => {
         console.log(`* Connected to ${addr}:${port}`);
     });
