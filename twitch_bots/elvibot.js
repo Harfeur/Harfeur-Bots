@@ -28,10 +28,12 @@ exports.run = () => {
 
         // Remove whitespace from chat message
         const commandName = msg.trim().toLowerCase();
+        /*
         console.log(target);
         console.log(context);
         console.log(msg);
         console.log('');
+        */
         // If the command is known, let's execute it
         if (commandName === '!bo') {
             var now = Date.now();
