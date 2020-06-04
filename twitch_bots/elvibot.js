@@ -113,10 +113,10 @@ exports.run = () => {
         minuit.setMilliseconds(0)
         minuit = new Date(minuit.getTime() + 79200000);
         console.log(minuit - Date.now());
-        if (minuit - Date.now() > 0) {
+        if (minuit - Date.now() > 1000) {
             setTimeout(() => {
                 console.log("Bonne année");
-                //twitchBot.say('#mrelvilia', 'elviKappa Bonne année ! elviKappa');
+                twitchBot.say('#mrelvilia', 'elviKappa Bonne année ! elviKappa');
                 setTimeout(bonneAnnee(), 1000);
             }, minuit - Date.now());
         } else {
