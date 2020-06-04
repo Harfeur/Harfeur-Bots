@@ -111,7 +111,7 @@ exports.run = () => {
         minuit.setMinutes(0);
         minuit.setSeconds(0);
         minuit = new Date(minuit.getTime() + 86400000);
-        console.log(minuit);
+        console.log(minuit - Date.now());
         setTimeout(() => {
             console.log("Bonne année");
             twitchBot.say('#mrelvilia', 'elviKappa Bonne année ! elviKappa');
