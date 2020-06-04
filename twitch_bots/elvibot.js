@@ -110,13 +110,18 @@ exports.run = () => {
         minuit.setHours(0);
         minuit.setMinutes(0);
         minuit.setSeconds(0);
-        minuit = new Date(minuit.getTime() + 86400000);
+        minuit.setMilliseconds(0)
+        minuit = new Date(minuit.getTime() + 79200000);
         console.log(minuit - Date.now());
-        setTimeout(() => {
-            console.log("Bonne année");
-            twitchBot.say('#mrelvilia', 'elviKappa Bonne année ! elviKappa');
-            bonneAnnee();
-        }, minuit - Date.now());
+        if (minuit - Date.now() > 0) {
+            setTimeout(() => {
+                console.log("Bonne année");
+                //twitchBot.say('#mrelvilia', 'elviKappa Bonne année ! elviKappa');
+                setTimeout(bonneAnnee(), 1000);
+            }, minuit - Date.now());
+        } else {
+            console.log("ERREUR BONNE ANNEE");
+        }
     }
 
     twitchBot.on('connected', (addr, port) => {
