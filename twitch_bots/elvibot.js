@@ -105,8 +105,23 @@ exports.run = () => {
         twitchBot.say(channel, `OMG ${username} offre ${numbOfSubs} subs à la commu ! Débisous et merci à lui !! elviSub elviSub elviSub`);
     });
 
+    function bonneAnnee() {
+        var minuit = new Date()
+        minuit.setHours(0);
+        minuit.setMinutes(0);
+        minuit.setSeconds(0);
+        minuit = new Date(minuit.getTime() + 86400000);
+        console.log(minuit);
+        setTimeout(() => {
+            console.log("Bonne année");
+            twitchBot.say('#mrelvilia', 'elviKappa Bonne année ! elviKappa');
+            bonneAnnee();
+        }, minuit - Date.now());
+    }
+
     twitchBot.on('connected', (addr, port) => {
         console.log(`* Connected to ${addr}:${port}`);
+        bonneAnnee();
     });
 
     // Connect to Twitch:
