@@ -126,7 +126,7 @@ exports.run = () => {
 
     twitchBot.on('connected', (addr, port) => {
         console.log(`* Connected to ${addr}:${port}`);
-        bonneAnnee();
+        //bonneAnnee();
     });
 
     // Connect to Twitch:
