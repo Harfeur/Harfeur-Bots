@@ -8,9 +8,8 @@ exports.run = async () => {
 
     guichetUnique.on('ready', () => {
         console.log(`Bot ${guichetUnique.user.tag} démarré !`);
-        guichetUnique.users.resolve('327939742840913921').send('Bot démarré');
 
-        const imap = {
+        const imapInfo = {
             user: "inuc.mchourre",
             password: process.env.PASSMAIL,
             host: "imap-scout.univ-toulouse.fr",
@@ -21,9 +20,9 @@ exports.run = async () => {
             }
         };
 
-        const n = notifier(imap);
+        const nInfo = notifier(imapInfo);
 
-        n.on('end', () => n.start()) // session closed
+        nInfo.on('end', () => nInfo.start()) // session closed
             .on('connected', () => console.log("Connecté par mail"))
             .on('error', err => console.error(err))
             .on('mail', mail => {
@@ -31,7 +30,7 @@ exports.run = async () => {
                 console.log(mail);
                 const profs = ['ne.pas.repondre@univ-jfc.fr', 'nicolas.garric@univ-jfc.fr', 'david.panzoli@univ-jfc.fr', 'laura.brillon@univ-jfc.fr', 'pierre.piccinini@ext.univ-jfc.fr', 'laurent.rouziere@ext.univ-jfc.fr'];
 
-                if (profs.includes(mail.from[0].address) || mail.replyTo != undefined && mail.replyTo[0].address == "l2-info@listes.univ-jfc.fr") {
+                if (profs.includes(mail.from[0].address) || mail.to != undefined && mail.to[0].address == "l2-info@listes.univ-jfc.fr") {
                     l2info = guichetUnique.guilds.resolve('688085049912066057');
                     if (l2info.available && mail.text) {
 
@@ -47,6 +46,56 @@ exports.run = async () => {
 
                         annonces = l2info.channels.resolve('688086710948724829');
                         annonces.send(embed);
+                        if (mail.attachments != undefined) {
+                            mail.attachments.forEach(pj => {
+                                const attach = new Discord.MessageAttachment(pj.content, pj.fileName);
+                                annonces.send(attach);
+                            });
+                        }
+                    }
+                }
+
+            })
+            .start();
+
+        const imapPsycho = {
+            user: "inuc.cperloff",
+            password: process.env.PASSMAILPSYCHO,
+            host: "imap-scout.univ-toulouse.fr",
+            port: 993, // imap port
+            tls: true, // use secure connection
+            tlsOptions: {
+                rejectUnauthorized: false
+            }
+        };
+
+        const nPsycho = notifier(imapPsycho);
+
+        nPsycho.on('end', () => nPsycho.start()) // session closed
+            .on('connected', () => console.log("Connecté par mail"))
+            .on('error', err => console.error(err))
+            .on('mail', mail => {
+
+                console.log(mail);
+
+                if (mail.to != undefined && mail.to[0].address == "l2-psycho@listes.univ-jfc.fr") {
+                    var psycho = guichetUnique.guilds.resolve('707584901557256232');
+                    if (psycho.available && mail.text) {
+
+                        const embed = new Discord.MessageEmbed()
+                            .setColor('#ff542f')
+                            .setTitle(mail.subject)
+                            .setURL('https://scout.univ-toulouse.fr/')
+                            .setAuthor(mail.from[0].name)
+                            .setDescription(mail.text.substring(0, 2048))
+                            .setThumbnail('https://authc.univ-toulouse.fr/assets/logos/old_unr-cb65b75066f2691ab0919abdfeb665b5.png')
+                            .setTimestamp(mail.date)
+                            .setFooter('Source : Mails Scout');
+
+                        var annonces = psycho.channels.resolve('707646399302598687');
+                        annonces.send("<@&707597000664809574>", {
+                            embed: embed
+                        });
                         if (mail.attachments != undefined) {
                             mail.attachments.forEach(pj => {
                                 const attach = new Discord.MessageAttachment(pj.content, pj.fileName);
