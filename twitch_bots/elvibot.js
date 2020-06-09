@@ -103,12 +103,12 @@ exports.run = () => {
 
         // Remove whitespace from chat message
         const commandName = msg.trim().toLowerCase();
-        
+        /*
         console.log(target);
         console.log(context);
         console.log(msg);
         console.log('');
-
+        */
         if (msg.toLowerCase().includes('elvibot')) {
             var query = msg.toLowerCase().split("elvibot").join('');
             executeQueries(projectId, context.username, [query], languageCode);
