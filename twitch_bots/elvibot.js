@@ -215,8 +215,27 @@ exports.run = () => {
         leetchi.on("newParticipations", participations => {
             participations.forEach(participation => {
                 console.log(participation);
-                if (participation.showContributionAmount)
-                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
+                if (participation.showContributionAmount) {
+                    var message = `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`;
+                    var money = participation.amountFormatted.split(" ");
+                    var moneyJoin = "";
+                    money.forEach(str => {
+                        if (str != "€") moneyJoin+=str;
+                    });
+                    for (let index = 0; index < parseInt(moneyJoin); index++) {
+                        message+=" elviMoney";
+                    }
+                    while (message.length != 0) {
+                        var trunc = message.substring(0, 500);
+                        if (trunc.length != message.length) {
+                            trunc = trunc.split(" ")
+                            trunc.pop();
+                            trunc = trunc.join(" ");
+                        }
+                        message = message.substring(trunc.length, message.length);
+                        twitchBot.say('#mrelvilia', trunc);
+                    }
+                }
                 else
                     twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
             });
