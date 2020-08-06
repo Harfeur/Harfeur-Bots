@@ -6,15 +6,19 @@ const languageCode = 'fr';
 
 exports.run = () => {
 
+    const leetchi = require('../modules/leetchi.js');
+
     process.env['GOOGLE_APPLICATION_CREDENTIALS'] = __dirname + "/Small-Talk-1071da34a79a.json";
 
     function hashCode(s) {
-        var h = 0, l = s.length, i = 0;
-        if ( l > 0 )
-          while (i < l)
-            h = (h << 5) - h + s.charCodeAt(i++) | 0;
+        var h = 0,
+            l = s.length,
+            i = 0;
+        if (l > 0)
+            while (i < l)
+                h = (h << 5) - h + s.charCodeAt(i++) | 0;
         return h;
-      };
+    };
 
     const sessionClient = new dialogflow.SessionsClient();
 
@@ -207,6 +211,16 @@ exports.run = () => {
     twitchBot.on('connected', (addr, port) => {
         console.log(`* Connected to ${addr}:${port}`);
         //bonneAnnee();
+
+        leetchi.on("newParticipations", participations => {
+            participations.forEach(participation => {
+                console.log(participation);
+                if (participation.showContributionAmount)
+                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
+                else
+                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
+            });
+        });
     });
 
     // Connect to Twitch:
