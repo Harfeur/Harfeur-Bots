@@ -41,6 +41,8 @@ async function scrap() {
                 i++;
             }
 
+            savedParticipations = participations;
+
             if (newParticipations.length != 0)
                 obj.emit('newParticipations', newParticipations);
         }
