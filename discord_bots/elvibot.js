@@ -5,6 +5,9 @@ exports.run = () => {
 
     const elviBot = new Discord.Client();
 
+    const leetchi = require('../modules/leetchi.js');
+    var savedParticipations;
+
     twitch.clientID = process.env.TWITCH_APP;
 
 
@@ -137,6 +140,22 @@ exports.run = () => {
         setInterval(() => {
             fetchLive();
         }, 120000);
+
+        leetchi.on("newParticipations", participations => {
+
+            var serveur = elviBot.guilds.resolve('606951801731940352');
+            if (serveur == null || !serveur.available) return;
+            var canal = serveur.channels.resolve('606951801731940358');
+            if (canal == null) return;
+
+            participations.forEach(participation => {
+                console.log(participation);
+                if (participation.showContributionAmount)
+                    canal.send(`**${participation.fullName}** vient de participer en donnant **${participation.amountFormatted}** dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
+                else
+                    canal.send(`**${participation.fullName}** vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
+            });
+        });
     });
 
     elviBot.login(process.env.ELVIBOT);
