@@ -6,7 +6,6 @@ exports.run = () => {
     const elviBot = new Discord.Client();
 
     const leetchi = require('../modules/leetchi.js');
-    var savedParticipations;
 
     twitch.clientID = process.env.TWITCH_APP;
 
@@ -134,6 +133,13 @@ exports.run = () => {
             }
         });
     }
+
+    elviBot.on('message', message => {
+        if (message.content.toLowerCase() == '!papa') {
+            message.author.send("J'ai créé une cagnotte pour essayer d'enfin soulager mon père qui n'en peut plus de cette situation. Si la cagnotte atteint 100%, nous donnons les deux maisons à une association pour aider d'autres familles ! https://bit.ly/2VmqG1n MERCI D'AVANCE À TOUS ♥");
+            message.delete(0);
+        }
+    });
 
     elviBot.on('ready', () => {
         console.log(`Bot ${elviBot.user.tag} démarré !`);
