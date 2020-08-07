@@ -2,7 +2,7 @@ if (process.argv[2] && process.argv[2] == "dev") require("custom-env").env();
 
 const express = require('express')
 const app = express()
-const port = 80
+const port = process.env.PORT | 80
 const axios = require('axios')
 const STREAMLABS_API_BASE = 'https://www.streamlabs.com/api/v1.0'
 
