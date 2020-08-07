@@ -14,7 +14,8 @@ async function scrap() {
     const options = {
         method: "GET",
         headers: {
-            'x-requested-with': 'XMLHttpRequest'
+            'x-requested-with': 'XMLHttpRequest',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'
         },
         data: {
             hashId: leetchID,
@@ -48,6 +49,10 @@ async function scrap() {
         }
     }
 
+    var random = Math.floor(Math.random() * 3000);
+    setTimeout(scrap, 5000 + random);
+
 }
 
-setInterval(scrap, 5000);
+var random = Math.floor(Math.random() * 3000);
+setTimeout(scrap, 5000 + random);
