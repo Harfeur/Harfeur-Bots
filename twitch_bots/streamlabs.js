@@ -17,7 +17,7 @@ exports.run = () => {
                 var data = {
                     name: participation.fullName,
                     message: message,
-                    identifier: participation.fullName.join(" "),
+                    identifier: participation.fullName,
                     amount: parseFloat(moneyJoin),
                     currency: "EUR",
                     access_token: process.env.STREAMLABS_ACCESS_TOKEN
