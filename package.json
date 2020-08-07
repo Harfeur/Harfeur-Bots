@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "web": "node web.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -15,6 +16,7 @@
     "child_process": "^1.0.2",
     "custom-env": "^2.0.1",
     "discord.js": "^12.0.2",
+    "express": "^4.17.1",
     "fs": "0.0.1-security",
     "mail-notifier": "^0.5.0",
     "tmi.js": "^1.5.0",
