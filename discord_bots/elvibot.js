@@ -135,9 +135,12 @@ exports.run = () => {
     }
 
     elviBot.on('message', message => {
+        if (message.author.bot) return;
+
         if (message.content.toLowerCase() == '!papa') {
-            message.author.send("J'ai créé une cagnotte pour essayer d'enfin soulager mon père qui n'en peut plus de cette situation. Si la cagnotte atteint 100%, nous donnons les deux maisons à une association pour aider d'autres familles ! https://bit.ly/2VmqG1n MERCI D'AVANCE À TOUS ♥");
-            message.delete();
+            message.author.send("J'ai créé une cagnotte pour essayer d'enfin soulager mon père qui n'en peut plus de cette situation. Si la cagnotte atteint 100%, nous donnons les deux maisons à une association pour aider d'autres familles ! https://bit.ly/2VmqG1n MERCI D'AVANCE À TOUS ♥")
+            .catch(() => {message.reply("tes DM ne sont pas ouverts :(")});
+            if (message.deletable) message.delete();
         }
     });
 
