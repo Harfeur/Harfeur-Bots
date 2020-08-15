@@ -7,7 +7,7 @@ exports.run = () => {
 
     twitch.clientID = process.env.TWITCH_APP;
 
-    const MESSAGE_LIVE = ':ehnviYo: les potes, Ehnvi est là, Gogogo :ehnviLior:';
+    const MESSAGE_LIVE = '<:subYo:742107078595969025> les potes, Ehnvi est là, Gogogo <:subLior:742106697933520946>';
     const MESSAGE_FIN = '';
 
     function fetchLive() {
