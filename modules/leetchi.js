@@ -83,7 +83,7 @@ async function scrap() {
             stop = true;
         });
         if (stop) return;
-        console.log(`Envoi de ${newParticipations.length} nouveau(x) don(s)`);
+        console.log(`\nEnvoi de ${newParticipations.length} nouveau(x) don(s)`);
         obj.emit('newParticipations', newParticipations);
     }  
     

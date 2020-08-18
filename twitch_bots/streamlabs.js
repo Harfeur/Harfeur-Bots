@@ -6,7 +6,6 @@ exports.run = () => {
 
     leetchi.on("newParticipations", participations => {
         participations.forEach(participation => {
-            console.log(participation);
             var nom = participation.fullName.replace(/-/g, " ");
             if (participation.showContributionAmount) {
                 var message = `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`;
@@ -23,15 +22,14 @@ exports.run = () => {
                     currency: "EUR",
                     access_token: process.env.STREAMLABS_ACCESS_TOKEN
                 }
-                console.log("Lancement")
                 axios.post('https://streamlabs.com/api/v1.0/donations', data)
-                    .then((res) => {
-                        console.log(`Status: ${res.status}`);
-                        console.log('Body: ', res.data);
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                    });
+                .then(msg => {
+                    console.log("Notif envoyée sur Streamlabs !");
+                })
+                .catch(err => {
+                    console.log("Erreur lors de l'envoi du message streamlabs du don n°" + participation.id);
+                    console.error(err);
+                });
             }
         });
     });

@@ -163,7 +163,7 @@ exports.run = () => {
                 if (participation.showContributionAmount)
                     canal.send(`**${participation.fullName}** vient de participer en donnant **${participation.amountFormatted}** dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`)
                     .then(msg => {
-                        console.log("Un message bien envoyé sur Discord !");
+                        console.log("Notif envoyée sur Discord !");
                     })
                     .catch(err => {
                         console.log("Erreur lors de l'envoi du message discord du don n°" + participation.id);
@@ -172,7 +172,7 @@ exports.run = () => {
                 else
                     canal.send(`**${participation.fullName}** vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`)
                     .then(msg => {
-                        console.log("Un message bien envoyé sur Discord !");
+                        console.log("Notif envoyée sur Discord !");
                     })
                     .catch(err => {
                         console.log("Erreur lors de l'envoi du message discord du don n°" + participation.id);

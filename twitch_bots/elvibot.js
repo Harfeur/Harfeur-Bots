@@ -214,7 +214,6 @@ exports.run = () => {
 
         leetchi.on("newParticipations", participations => {
             participations.forEach(participation => {
-                console.log(participation);
                 if (participation.showContributionAmount) {
                     var message = `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`;
                     var money = participation.amountFormatted.split(" ");
@@ -233,11 +232,25 @@ exports.run = () => {
                             trunc = trunc.join(" ");
                         }
                         message = message.substring(trunc.length, message.length);
-                        twitchBot.say('#mrelvilia', trunc);
+                        twitchBot.say('#mrelvilia', trunc)
+                        .then(msg => {
+                            console.log("Notif envoyée sur Twitch !");
+                        })
+                        .catch(err => {
+                            console.log("Erreur lors de l'envoi du message twitch du don n°" + participation.id);
+                            console.error(err);
+                        });
                     }
                 }
                 else
-                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`);
+                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`)
+                    .then(msg => {
+                        console.log("Notif envoyée sur Twitch !");
+                    })
+                    .catch(err => {
+                        console.log("Erreur lors de l'envoi du message twitch du don n°" + participation.id);
+                        console.error(err);
+                    });
             });
         });
     });
