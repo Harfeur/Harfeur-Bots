@@ -98,7 +98,7 @@ exports.run = () => {
 
     var nbBo = 0;
     var lastBo = new Date();
-    var maxBo = 5;
+    var maxBo = 3;
 
     // Register our event handlers (defined below)
 
@@ -140,53 +140,40 @@ exports.run = () => {
 
 
     twitchBot.on("subscription", (channel, username, method, message, userstate) => {
-        console.log("Subscription");
-        console.log(method);
-        console.log(userstate);
-
         twitchBot.say(channel, `Merci beaucoup ${username} pour le sub !! Et bienvenue à toi !! elviSub elviSub elviSub`);
+        console.log(`${username} s'est abonné avec un tier ${method.plan.charAt(0)} - Prime : ${method.prime}`);
     });
 
     twitchBot.on("resub", (channel, username, months, message, userstate, methods) => {
-        console.log("Resub");
-        console.log(userstate);
-        console.log(methods);
-
-        let msg = "";
         if (months >= 1) twitchBot.say(channel, `Merci beaucoup ${username} d'avoir resub !! ${months} mois à la suite !! Tu gères elviSub elviSub elviSub`);
         else twitchBot.say(channel, `Merci beaucoup ${username} pour le resub !! elviSub elviSub elviSub`);
+        console.log(`${username} s'est resub avec un tier ${method.plan.charAt(0)} - Prime : ${method.prime}`);
     });
 
     twitchBot.on("subgift", (channel, username, streakMonths, recipient, methods, userstate) => {
-        console.log("Gift");
-        console.log(userstate);
-        console.log(methods);
         twitchBot.say(channel, `Merci beaucoup ${username} d'avoir offert un sub à ${recipient} !! elviSub elviSub elviSub`);
+        console.log(`${username} a offert un sub à ${recipient} avec un tier ${method.plan.charAt(0)}`);
     });
 
     twitchBot.on("timeout", (channel, username, reason, duration, userstate) => {
-        console.log("TO");
-        console.log(userstate);
         if (duration != 0)
             twitchBot.say(channel, `Bye bye ${username} elviHey Tu pourras reparler dans ${duration} secondes.`)
+        console.log(`TimeOut de ${username} pendant ${duration} s.`);
     });
 
     twitchBot.on("raided", (channel, username, viewers) => {
-        console.log("RAID");
         twitchBot.say(channel, `${viewers} futurs subs potentiels viennent d'arriver via ${username} ! elviHey elviHey`)
+        console.log(`Raid de ${username} avec ${viewers} viewers`);
     });
 
     twitchBot.on("ban", (channel, username, reason, userstate) => {
-        console.log("BAN");
-        console.log(userstate);
         twitchBot.say(channel, `${username}, la tribu réunifiée a décidé de vous éliminer, et leur sentence est irrévocable.`);
+        console.log(`${username} a été banni ! ${reason}`);
     });
 
     twitchBot.on("submysterygift", (channel, username, numbOfSubs, methods, userstate) => {
-        console.log("Gift++");
-        console.log(userstate);
-        console.log(methods);
         twitchBot.say(channel, `OMG ${username} offre ${numbOfSubs} subs à la commu ! Débisous et merci à lui !! elviSub elviSub elviSub`);
+        console.log(`${username} a offert ${numbOfSubs} subs avec un tier ${method.plan.charAt(0)}`);
     });
 
     function bonneAnnee() {
