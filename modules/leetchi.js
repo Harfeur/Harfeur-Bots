@@ -1,6 +1,8 @@
 const axios = require('axios');
 const EventEmitter = require('events');
-const { Client } = require('pg');
+const {
+    Client
+} = require('pg');
 
 const leetchID = "rE4Qjva5";
 const url = "https://www.leetchi.com/fr/Fundraising/Participations";
@@ -12,7 +14,7 @@ var savedParticipations;
 const clientpg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-      rejectUnauthorized: false
+        rejectUnauthorized: false
     }
 });
 
@@ -25,12 +27,14 @@ async function scrap() {
 
     var lastID = 0;
     await clientpg.query(`SELECT value FROM vars WHERE name='leetchi';`)
-    .then(res => {lastID = parseInt(res.rows[0].value);})
-    .catch(err => {
-        console.log("Erreur Postgres SELECT");
-        console.error(err);
-        stop = true;
-    });
+        .then(res => {
+            lastID = parseInt(res.rows[0].value);
+        })
+        .catch(err => {
+            console.log("Erreur Postgres SELECT");
+            console.error(err);
+            stop = true;
+        });
 
     if (stop) return;
 
@@ -50,12 +54,14 @@ async function scrap() {
     var response;
 
     await axios(options)
-    .then(res => {response = res})
-    .catch(err => {
-        console.log("ERREUR LEETCHI");
-        console.error(err);
-        stop = true;
-    });
+        .then(res => {
+            response = res
+        })
+        .catch(err => {
+            console.log("ERREUR LEETCHI");
+            console.error(err);
+            stop = true;
+        });
 
     if (stop) return;
 
@@ -65,28 +71,27 @@ async function scrap() {
     let i = 0;
     let newParticipations = [];
     while (i < participations.data.length && !fin) {
-        if (participations.data[i].id > lastID)
+        if (participations.data[i].id > lastID) {
+            participation = participations.data[i];
+            participation.fullName = participation.fullName.split(" ")[0];
             newParticipations.push(participations.data[i]);
-        else
+        } else
             fin = true;
         i++;
     }
 
-    
-
     if (newParticipations.length != 0) {
-        console.log(newParticipations);
         await clientpg.query(`UPDATE vars SET value = '${newParticipations[0].id}' WHERE name = 'leetchi';`)
-        .catch(err => {
-            console.log("Erreur Postgres UPDATE");
-            console.error(err);
-            stop = true;
-        });
+            .catch(err => {
+                console.log("Erreur Postgres UPDATE");
+                console.error(err);
+                stop = true;
+            });
         if (stop) return;
         console.log(`\nEnvoi de ${newParticipations.length} nouveau(x) don(s)`);
         obj.emit('newParticipations', newParticipations);
-    }  
-    
+    }
+
 
     var random = Math.floor(Math.random() * 3000);
     setTimeout(scrap, 5000 + random);
