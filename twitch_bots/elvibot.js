@@ -230,7 +230,7 @@ exports.run = () => {
                     }
                 }
                 else
-                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`)
+                    twitchBot.say('#mrelvilia', `${participation.fullName} vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥ elviMoney elviMoney elviMoney`)
                     .then(msg => {
                         console.log("Notif envoyée sur Twitch !");
                     })
