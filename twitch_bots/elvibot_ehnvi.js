@@ -26,7 +26,7 @@ exports.run = () => {
         leetchi.on("newParticipations", participations => {
             participations.forEach(participation => {
                 if (participation.showContributionAmount) {
-                    var message = `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`;
+                    var message = `${participation.fullName} vient de participer en donnant ${participation.amountFormatted} dans la cagnotte pour aider le père d'Elvi ! Pour plus d'infos, écrivez !papa dans le chat ♥`;
                     var money = participation.amountFormatted.split(" ");
                     var moneyJoin = "";
                     money.forEach(str => {

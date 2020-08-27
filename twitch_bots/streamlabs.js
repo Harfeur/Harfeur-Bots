@@ -14,7 +14,7 @@ exports.run = () => {
                 money.forEach(str => {
                     if (str != "€") moneyJoin += str;
                 });
-                var data = {
+                var elvi = {
                     name: nom,
                     message: message,
                     identifier: nom.replace(" ", ""),
@@ -22,12 +22,29 @@ exports.run = () => {
                     currency: "EUR",
                     access_token: process.env.STREAMLABS_ACCESS_TOKEN
                 }
-                axios.post('https://streamlabs.com/api/v1.0/donations', data)
+                var ehnvi_ = {
+                    name: nom,
+                    message: message,
+                    identifier: nom.replace(" ", ""),
+                    amount: parseFloat(moneyJoin),
+                    currency: "EUR",
+                    access_token: process.env.STREAMLABS_ACCESS_TOKEN_EHNVI
+                }
+                
+                axios.post('https://streamlabs.com/api/v1.0/donations', elvi)
                 .then(msg => {
                     console.log("Notif envoyée sur Streamlabs !");
                 })
                 .catch(err => {
-                    console.log("Erreur lors de l'envoi du message streamlabs du don n°" + participation.id);
+                    console.log("Erreur lors de l'envoi du message streamlabs elvi du don n°" + participation.id);
+                    console.error(err);
+                });
+                axios.post('https://streamlabs.com/api/v1.0/donations', ehnvi_)
+                .then(msg => {
+                    console.log("Notif envoyée sur Streamlabs !");
+                })
+                .catch(err => {
+                    console.log("Erreur lors de l'envoi du message streamlabs ehnvi_ du don n°" + participation.id);
                     console.error(err);
                 });
             }
