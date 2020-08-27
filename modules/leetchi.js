@@ -9,8 +9,6 @@ const url = "https://www.leetchi.com/fr/Fundraising/Participations";
 
 var obj = new EventEmitter.EventEmitter();
 
-var savedParticipations;
-
 const clientpg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: {
