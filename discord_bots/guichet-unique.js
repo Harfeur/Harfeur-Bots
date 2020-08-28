@@ -26,9 +26,6 @@ exports.run = async () => {
             .on('connected', () => console.log("Connecté par mail"))
             .on('error', err => console.error(err))
             .on('mail', mail => {
-
-                console.log(mail);
-
                 if (mail.to != undefined) {
                     mail.to.forEach(addresse => {
                         if (addresse.address == "l2-info@listes.univ-jfc.fr") {
