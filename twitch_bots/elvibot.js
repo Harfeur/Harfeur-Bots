@@ -1,85 +1,8 @@
 const tmi = require('tmi.js');
-const dialogflow = require('@google-cloud/dialogflow');
-
-const projectId = 'small-talk-jssokx';
-const languageCode = 'fr';
 
 exports.run = () => {
 
     const leetchi = require('../modules/leetchi.js');
-
-    process.env['GOOGLE_APPLICATION_CREDENTIALS'] = __dirname + "/Small-Talk-1071da34a79a.json";
-
-    function hashCode(s) {
-        var h = 0,
-            l = s.length,
-            i = 0;
-        if (l > 0)
-            while (i < l)
-                h = (h << 5) - h + s.charCodeAt(i++) | 0;
-        return h;
-    };
-
-    const sessionClient = new dialogflow.SessionsClient();
-
-    async function detectIntent(
-        projectId,
-        sessionId,
-        query,
-        contexts,
-        languageCode
-    ) {
-        // The path to identify the agent that owns the created intent.
-        const sessionPath = sessionClient.projectAgentSessionPath(
-            projectId,
-            sessionId
-        );
-
-        // The text query request.
-        const request = {
-            session: sessionPath,
-            queryInput: {
-                text: {
-                    text: query,
-                    languageCode: languageCode,
-                },
-            },
-        };
-
-        if (contexts && contexts.length > 0) {
-            request.queryParams = {
-                contexts: contexts,
-            };
-        }
-
-        const responses = await sessionClient.detectIntent(request);
-        return responses[0];
-    }
-
-    async function executeQueries(projectId, username, queries, languageCode) {
-        // Keeping the context across queries let's us simulate an ongoing conversation with the bot
-        let sessionId = hashCode(username);
-        let context;
-        let intentResponse;
-        for (const query of queries) {
-            try {
-                intentResponse = await detectIntent(
-                    projectId,
-                    sessionId,
-                    query,
-                    context,
-                    languageCode
-                );
-                if (intentResponse.queryResult.fulfillmentText != "") {
-                    twitchBot.say('#mrelvilia', username + ", " + intentResponse.queryResult.fulfillmentText);
-                }
-                // Use the context from this response for next queries
-                context = intentResponse.queryResult.outputContexts;
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
 
     const opts = {
         connection: {
@@ -113,10 +36,6 @@ exports.run = () => {
         console.log(msg);
         console.log('');
         */
-        if (msg.toLowerCase().includes('elvibot')) {
-            var query = msg.toLowerCase().split("elvibot").join('');
-            executeQueries(projectId, context.username, [query], languageCode);
-        }
 
         // If the command is known, let's execute it
         if (commandName === '!bo') {
