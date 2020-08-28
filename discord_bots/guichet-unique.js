@@ -101,8 +101,6 @@ exports.run = async () => {
             .on('error', err => console.error(err))
             .on('mail', mail => {
 
-                console.log(mail);
-
                 var roles = "";
 
                 if (mail.to != undefined) {
