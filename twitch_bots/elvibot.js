@@ -63,13 +63,13 @@ exports.run = () => {
         console.log(`${username} s'est abonné avec un tier ${method.plan.charAt(0)} - Prime : ${method.prime}`);
     });
 
-    twitchBot.on("resub", (channel, username, months, message, userstate, methods) => {
+    twitchBot.on("resub", (channel, username, months, message, userstate, method) => {
         if (months >= 1) twitchBot.say(channel, `Merci beaucoup ${username} d'avoir resub !! ${months} mois à la suite !! Tu gères elviSub elviSub elviSub`);
         else twitchBot.say(channel, `Merci beaucoup ${username} pour le resub !! elviSub elviSub elviSub`);
         console.log(`${username} s'est resub avec un tier ${method.plan.charAt(0)} - Prime : ${method.prime}`);
     });
 
-    twitchBot.on("subgift", (channel, username, streakMonths, recipient, methods, userstate) => {
+    twitchBot.on("subgift", (channel, username, streakMonths, recipient, method, userstate) => {
         twitchBot.say(channel, `Merci beaucoup ${username} d'avoir offert un sub à ${recipient} !! elviSub elviSub elviSub`);
         console.log(`${username} a offert un sub à ${recipient} avec un tier ${method.plan.charAt(0)}`);
     });
@@ -90,7 +90,7 @@ exports.run = () => {
         console.log(`${username} a été banni ! ${reason}`);
     });
 
-    twitchBot.on("submysterygift", (channel, username, numbOfSubs, methods, userstate) => {
+    twitchBot.on("submysterygift", (channel, username, numbOfSubs, method, userstate) => {
         twitchBot.say(channel, `OMG ${username} offre ${numbOfSubs} subs à la commu ! Débisous et merci à lui !! elviSub elviSub elviSub`);
         console.log(`${username} a offert ${numbOfSubs} subs avec un tier ${method.plan.charAt(0)}`);
     });
