@@ -5,10 +5,7 @@ exports.run = () => {
 
     const elviBot = new Discord.Client();
 
-    const leetchi = require('../modules/leetchi.js');
-
     twitch.clientID = process.env.TWITCH_APP;
-
 
     const MESSAGE_LIVE = 'Hey !!! Elvi est en LIVE sur Twitch ;) Regarde ça !';
     const MESSAGE_FIN = 'Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici :';
@@ -133,53 +130,12 @@ exports.run = () => {
         });
     }
 
-    elviBot.on('message', message => {
-        if (message.author.bot) return;
-
-        if (message.content.toLowerCase() == '!papa') {
-            message.author.send("J'ai créé une cagnotte pour essayer d'enfin soulager mon père qui n'en peut plus de cette situation. Si la cagnotte atteint 100%, nous donnons les deux maisons à une association pour aider d'autres familles ! https://bit.ly/2VmqG1n MERCI D'AVANCE À TOUS ♥")
-                .catch(() => {
-                    message.reply("tes DM ne sont pas ouverts :(")
-                });
-            if (message.deletable) message.delete();
-        }
-    });
-
     elviBot.on('ready', () => {
         console.log(`Bot ${elviBot.user.tag} démarré !`);
         setInterval(() => {
             fetchLive();
         }, 120000);
 
-        leetchi.on("newParticipations", participations => {
-
-            var serveur = elviBot.guilds.resolve('606951801731940352');
-            if (serveur == null || !serveur.available) return;
-            var canal = serveur.channels.resolve('606951801731940358');
-            if (canal == null) return;
-
-            participations.forEach(participation => {
-                console.log(participation);
-                if (participation.showContributionAmount)
-                    canal.send(`**${participation.fullName}** vient de participer en donnant **${participation.amountFormatted}** dans la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`)
-                    .then(msg => {
-                        console.log("Notif envoyée sur Discord !");
-                    })
-                    .catch(err => {
-                        console.log("Erreur lors de l'envoi du message discord du don n°" + participation.id);
-                        console.error(err);
-                    });
-                else
-                    canal.send(`**${participation.fullName}** vient de participer à la cagnotte pour aider mon père ! Pour plus d'infos, écrivez !papa dans le chat ♥`)
-                    .then(msg => {
-                        console.log("Notif envoyée sur Discord !");
-                    })
-                    .catch(err => {
-                        console.log("Erreur lors de l'envoi du message discord du don n°" + participation.id);
-                        console.error(err);
-                    });
-            });
-        });
     });
 
     elviBot.login(process.env.ELVIBOT);

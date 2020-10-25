@@ -23,5 +23,4 @@ require('./discord_bots/elvibot.js').run();
 require('./discord_bots/ehnvibot.js').run();
 
 require('./twitch_bots/elvibot.js').run();
-require('./twitch_bots/elvibot_ehnvi.js').run();
 require('./twitch_bots/streamlabs.js').run();
