@@ -17,6 +17,8 @@ exports.run = () => {
 
     const twitchBot = new tmi.client(opts);
 
+    const streamlabs = require('../modules/streamlabs.js');
+
     var nbBo = 0;
     var lastBo = new Date();
     var maxBo = 3;
@@ -93,6 +95,11 @@ exports.run = () => {
         console.log(`${username} a offert ${numbOfSubs} subs avec un tier ${method.plan.charAt(0)}`);
     });
 
+    twitchBot.on("cheer", (channel, userstate, message) => {
+        twitchBot.say(channel, `Merci beaucoup ${userstate.username} pour ton don de ${userstate.bits} bits !! elviMoney`);
+        console.log(`${userstate.username} a donné ${userstate.bits} bits`);
+    });
+
     function bonneAnnee() {
         var minuit = new Date()
         minuit.setHours(0);
@@ -115,6 +122,25 @@ exports.run = () => {
     twitchBot.on('connected', (addr, port) => {
         console.log(`* Connected to ${addr}:${port}`);
         //bonneAnnee();
+
+        streamlabs.on("newDons", dons => {
+            dons.forEach(don => {
+                var devise;
+                switch (don.currency) {
+                    case "EUR":
+                        devise = "€"
+                        break;
+                    case "USD":
+                        devise = "$"
+                        break;
+                    default:
+                        devise = don.currency;
+                        break;
+                }
+                twitchBot.say('#mrelvilia', `Merci beaucoup ${don.name} pour ton don de ${(+don.amount).toFixed(2).replace(/\.0+$/,'')} ${devise} !! elviMoney`)
+            });
+        });
+
     });
 
     // Connect to Twitch:
