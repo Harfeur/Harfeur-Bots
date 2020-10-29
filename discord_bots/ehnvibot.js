@@ -21,7 +21,7 @@ exports.run = () => {
                 if (serveur == null || !serveur.available) return;
                 var canal = serveur.channels.resolve('587867579133984788');
                 if (canal == null) return;
-
+                
                 canal.messages.fetch({
                         limit: 10
                     })
@@ -132,9 +132,7 @@ exports.run = () => {
 
     ehnvibot.on('ready', () => {
         console.log(`Bot ${ehnvibot.user.tag} démarré !`);
-        setInterval(() => {
-            fetchLive();
-        }, 120000);
+        setInterval(fetchLive, 120000);
     });
 
     ehnvibot.login(process.env.EHNVIBOT);
