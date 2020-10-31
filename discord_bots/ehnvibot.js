@@ -1,5 +1,17 @@
 const Discord = require('discord.js');
 const twitch = require('twitch-api-v5');
+const {
+    Client
+} = require('pg');
+
+const clientpg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+
+clientpg.connect();
 
 exports.run = () => {
 
