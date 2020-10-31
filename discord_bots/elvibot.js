@@ -36,11 +36,9 @@ exports.run = () => {
 
                 // On récupére le dernier message du bot
                 clientpg.query(`SELECT * FROM twitch WHERE channelID=23217261;`)
-                    .then(res => {
-                        var messageID = res.rows[0].messageid;
-                        var message;
-                        if (messageID != 0)
-                            message = canal.messages.fetch(messageID.toString());
+                    .then(query => {
+                        var messageID = query.rows[0].messageid;
+
                         if (res.stream != null) {
                             var now = Date.now()
                             var debut = new Date(res.stream.created_at)
@@ -88,7 +86,7 @@ exports.run = () => {
                                     }
                                 ]
                             });
-                            if (messageID == 0) {
+                            if (messageID == "0") {
                                 canal.send("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/mrelvilia>", {
                                         "embed": embed
                                     })
@@ -98,9 +96,12 @@ exports.run = () => {
                                     });
                                 canal.setName("📌en-live");
                             } else {
-                                message.edit("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/mrelvilia>", {
-                                    "embed": embed
-                                });
+                                canal.messages.fetch(messageID)
+                                    .then(message => {
+                                        message.edit("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/mrelvilia>", {
+                                            "embed": embed
+                                        });
+                                    });
                             }
                             elviBot.user.setPresence({
                                 activity: {
@@ -109,10 +110,10 @@ exports.run = () => {
                                     url: res.stream.channel.url
                                 }
                             });
-                        } else if (messageID != 0) {
+                        } else if (messageID != "0") {
                             canal.setName("📌annonces-stream");
 
-                            clientpg.query(`UPDATE twitch SET messageID = 0 WHERE channelID=23217261;`)
+                            clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=23217261;`)
                                 .catch(console.error);
 
                             twitch.channels.videos({
@@ -122,18 +123,20 @@ exports.run = () => {
                             }, (err, res2) => {
                                 if (err) console.error(err);
                                 else {
-                                    if (message.embeds.length > 0) {
-                                        var embed = message.embeds[0]
-                                        embed.setTitle("LIVE terminé");
-                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                        embed.setURL(res2.videos[0].url);
-                                        message.edit(`${MESSAGE_FIN} <${res2.videos[0].url}>`, {
-                                            "embed": embed
+                                    canal.messages.fetch(messageID.toString())
+                                        .then(message => {
+                                            if (message.embeds.length > 0) {
+                                                var embed = message.embeds[0]
+                                                embed.setTitle("LIVE terminé");
+                                                embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                                embed.setURL(res2.videos[0].url);
+                                                message.edit(`${MESSAGE_FIN} <${res2.videos[0].url}>`, {
+                                                    "embed": embed
+                                                });
+                                            } else {
+                                                message.edit(`${MESSAGE_FIN} <${res2.videos[0].url}>`);
+                                            }
                                         });
-                                    } else {
-                                        message.edit(`${MESSAGE_FIN} <${res2.videos[0].url}>`);
-                                    }
-
                                 }
                             });
                             elviBot.user.setActivity(null);

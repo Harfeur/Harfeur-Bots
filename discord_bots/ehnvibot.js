@@ -35,11 +35,9 @@ exports.run = () => {
                 if (canal == null) return;
 
                 clientpg.query(`SELECT * FROM twitch WHERE channelID=31549669;`)
-                    .then(res => {
-                        var messageID = res.rows[0].messageid;
-                        var message;
-                        if (messageID != 0)
-                            message = canal.messages.fetch(messageID.toString());
+                    .then(query => {
+                        var messageID = query.rows[0].messageid;
+
                         if (res.stream != null) {
                             var now = Date.now()
                             var debut = new Date(res.stream.created_at)
@@ -87,10 +85,9 @@ exports.run = () => {
                                     }
                                 ]
                             });
-                            if (messageID == 0) {
+                            if (messageID == "0") {
                                 canal.send("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/ehnvi_>", {
                                         "embed": embed
-
                                     })
                                     .then(msg => {
                                         clientpg.query(`UPDATE twitch SET messageID = ${msg.id} WHERE channelID=31549669;`)
@@ -98,9 +95,12 @@ exports.run = () => {
                                     });
                                 canal.setName("🚩en-live🚩");
                             } else {
-                                message.edit("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/ehnvi_>", {
-                                    "embed": embed
-                                });
+                                canal.messages.fetch(messageID)
+                                    .then(message => {
+                                        message.edit("@everyone " + MESSAGE_LIVE + "\n<https://www.twitch.tv/ehnvi_>", {
+                                            "embed": embed
+                                        });
+                                    });
                             }
                             ehnvibot.user.setPresence({
                                 activity: {
@@ -109,10 +109,10 @@ exports.run = () => {
                                     url: res.stream.channel.url
                                 }
                             });
-                        } else if (messageID != 0) {
+                        } else if (messageID != "0") {
                             canal.setName("🚩annonces🚩");
 
-                            clientpg.query(`UPDATE twitch SET messageID = 0 WHERE channelID=31549669;`)
+                            clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=31549669;`)
                                 .catch(console.error);
 
                             twitch.channels.videos({
@@ -122,17 +122,20 @@ exports.run = () => {
                             }, (err, res2) => {
                                 if (err) console.error(err);
                                 else {
-                                    if (message.embeds.length > 0) {
-                                        var embed = message.embeds[0]
-                                        embed.setTitle("LIVE terminé");
-                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                        embed.setURL(res2.videos[0].url);
-                                        message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`, {
-                                            "embed": embed
+                                    canal.messages.fetch(messageID.toString())
+                                        .then(message => {
+                                            if (message.embeds.length > 0) {
+                                                var embed = message.embeds[0]
+                                                embed.setTitle("LIVE terminé");
+                                                embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                                embed.setURL(res2.videos[0].url);
+                                                message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`, {
+                                                    "embed": embed
+                                                });
+                                            } else {
+                                                message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`);
+                                            }
                                         });
-                                    } else {
-                                        message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${res2.videos[0].url}>`);
-                                    }
 
                                 }
                             });
@@ -150,6 +153,7 @@ exports.run = () => {
     ehnvibot.on('ready', () => {
         console.log(`Bot ${ehnvibot.user.tag} démarré !`);
         setInterval(fetchLive, 120000);
+        fetchLive();
     });
 
     ehnvibot.login(process.env.EHNVIBOT);
