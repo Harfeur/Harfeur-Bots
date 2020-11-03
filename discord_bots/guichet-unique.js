@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const notifier = require('mail-notifier');
 const fs = require('fs');
+const { argv } = require('process');
 
 exports.run = async () => {
 
@@ -311,10 +312,21 @@ exports.run = async () => {
         if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
             arg = m.content.split(' ');
             console.log(arg);
-            if (arg.length != 3) return;
-            m.guild.channels.resolve(arg[1]).members.forEach(member => {
-                member.voice.setChannel(arg[2]);
-            });
+            if (arg.length == 3) {
+                m.guild.channels.resolve(arg[1]).members.forEach(member => {
+                    member.voice.setChannel(arg[2]);
+                });
+            } else if (arg.length == 2) {
+                m.guild.members.fetch()
+                .then(res => {
+                    res.each(member => {
+                        if (member.voice.connection.status == 0 && member.voice.channelID != arg[1]) {
+                            member.voice.setChannel(arg[1]);
+                        }
+                    });
+                })
+                .catch(console.error);
+            }
         }
 
         if (m.content.startsWith('.fermer') && m.channel.name.startsWith("ticket-")) {
