@@ -1,14 +1,22 @@
 const Discord = require('discord.js');
 const notifier = require('mail-notifier');
 const fs = require('fs');
-const { argv } = require('process');
-const { client } = require('tmi.js');
-const { text } = require('body-parser');
+const {
+    argv
+} = require('process');
+const {
+    client
+} = require('tmi.js');
+const {
+    text
+} = require('body-parser');
 
 exports.run = async () => {
 
     var absents, channelID, memberID;
     var messageAppel = null;
+
+    var appelData = {}
 
     const guichetUnique = new Discord.Client();
 
@@ -323,30 +331,30 @@ exports.run = async () => {
                 });
             } else if (arg.length == 1 && m.member.voice.channelID != null) {
                 m.guild.members.fetch()
-                .then(res => {
-                    res.each(member => {
-                        if (member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
-                            member.voice.setChannel(m.member.voice.channelID);
-                        }
-                    });
-                })
-                .catch(console.error);
+                    .then(res => {
+                        res.each(member => {
+                            if (member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
+                                member.voice.setChannel(m.member.voice.channelID);
+                            }
+                        });
+                    })
+                    .catch(console.error);
             }
         }
 
         if (m.content.startsWith('.appel')) {
             arg = m.content.split(' ');
-            // if (m.member.roles.color.id!='722475909902237819') {
-            //     m.reply('Cette commande est réservée aux enseignants');
-            //     return;
-            // }
+            if (m.member.roles.color.id != '722475909902237819') {
+                m.reply('Cette commande est réservée aux enseignants');
+                return;
+            }
             if (arg[1] == 'cancel') {
-                if (m.member.id = memberID) {
-                    m.reply("Ce n'est pas vous qui avez lancé l'appel !")
+                if (appelData[m.member.id] == undefined) {
+                    m.reply("Vous n'avez pas lancé d'appel !")
                 } else {
                     m.reply('L\'appel a été annulé');
-                    messageAppel.delete();
-                    messageAppel = null;
+                    appelData[m.member.id].message.delete()
+                    delete appelData[m.member.id];
                 }
                 return;
             }
@@ -354,8 +362,8 @@ exports.run = async () => {
                 m.reply('Vous devez être dans un Amphi pour exécuter cette commande');
                 return;
             }
-            if (messageAppel != null) {
-                m.reply('Désolé, un appel est déjà en cours, veuillez attendre la fin');
+            if (appelData[m.member.id] != undefined) {
+                m.reply('Désolé, vous avez déjà lancé un appel, veuillez attendre la fin');
                 return;
             }
             if (m.mentions.roles.size == 0) {
@@ -363,31 +371,32 @@ exports.run = async () => {
                 return;
             }
 
-            absents = [];
-            channelID = m.member.voice.channelID;
-            memberID = m.member.id;
+            appelData[m.member.id] = {
+                absents: [],
+                channel: m.member.voice.channelID
+            };
 
             m.guild.members.fetch()
-            .then(members => {
-                members.each(member => {
-                    m.mentions.roles.each(role => {
-                        if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != channelID && !absents.includes(member.id))
-                            absents.push(member.id);
+                .then(members => {
+                    members.each(member => {
+                        m.mentions.roles.each(role => {
+                            if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != appelData[m.member.id].channel && !appelData[m.member.id].absents.includes(member.id))
+                                appelData[m.member.id].absents.push(member.id);
+                        });
                     });
+                    var message = `Liste des élèves absents au cours de ${m.member.voice.channel.parent.name} de ${m.member} :`;
+                    appelData[m.member.id].absents.forEach(member => {
+                        message += `\n<@${member}>`;
+                    });
+                    message += `\n\nRejoignez le cours dans les 15 prochaines minutes pour être marqué présent.`;
+                    appelData[m.member.id].message = m.guild.channels.resolve('722475696869343297').send(message);
+
+                    setTimeout(() => {
+                        appelData[m.member.id].message.edit(messageAppel.content.replace("Rejoignez le cours dans les 15 prochaines minutes pour être marqué présent.", "L'appel est terminé"));
+                        delete appelData[m.member.id];
+                    }, 1000 * 60 * 15);
                 });
-                var message = `Liste des élèves absents au cours de ${m.member.voice.channel.parent.name} de ${m.member} :`;
-                absents.forEach(member => {
-                    message += `\n<@${member}>`;
-                });
-                message+= `\n\nRejoignez le cours dans les 15 prochaines minutes pour être marqué présent.`;
-                messageAppel = m.guild.channels.resolve('722475696869343297').send(message);
-    
-                setTimeout(() => {
-                    messageAppel.edit(messageAppel.content.replace("Rejoignez le cours dans les 15 prochaines minutes pour être marqué présent.", "L'appel est terminé"));
-                    messageAppel = null;
-                }, 1000 * 60 * 15);
-            });
-           
+
         }
 
         if (m.content.startsWith('.fermer') && m.channel.name.startsWith("ticket-")) {
@@ -396,11 +405,13 @@ exports.run = async () => {
     });
 
     guichetUnique.on('voiceStateUpdate', (old, now) => {
-        if (messageAppel == null) return;
-        if (absents.includes(now.member.id)) {
-            if (now.channelID==channelID) {
-                messageAppel.edit(messageAppel.content.replace(`\n<@${now.member.id}>`, ""));
-                absents.splice(absents.indexOf(now.member.id), 1);
+        for (const [key, value] of Object.entries(appelData)) {
+            if (now.channelID == value.channel) {
+                if (value.absents.includes(now.member.id)) {
+                    appelData[key].message.edit(value.message.content.replace(`\n<@${now.member.id}>`, ""));
+                    appelData[key].absents.splice(value.absents.indexOf(now.member.id), 1);
+                }
+                break;
             }
         }
     });
