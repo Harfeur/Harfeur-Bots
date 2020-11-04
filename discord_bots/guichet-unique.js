@@ -2,8 +2,13 @@ const Discord = require('discord.js');
 const notifier = require('mail-notifier');
 const fs = require('fs');
 const { argv } = require('process');
+const { client } = require('tmi.js');
+const { text } = require('body-parser');
 
 exports.run = async () => {
+
+    var absents, channelID, memberID;
+    var messageAppel = null;
 
     const guichetUnique = new Discord.Client();
 
@@ -316,12 +321,12 @@ exports.run = async () => {
                 m.guild.channels.resolve(arg[1]).members.forEach(member => {
                     member.voice.setChannel(arg[2]);
                 });
-            } else if (arg.length == 2) {
+            } else if (arg.length == 1 && m.member.voice.channelID != null) {
                 m.guild.members.fetch()
                 .then(res => {
                     res.each(member => {
-                        if (member.voice.connection.status == 0 && member.voice.channelID != arg[1]) {
-                            member.voice.setChannel(arg[1]);
+                        if (member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
+                            member.voice.setChannel(m.member.voice.channelID);
                         }
                     });
                 })
@@ -329,8 +334,74 @@ exports.run = async () => {
             }
         }
 
+        if (m.content.startsWith('.appel')) {
+            arg = m.content.split(' ');
+            // if (m.member.roles.color.id!='722475909902237819') {
+            //     m.reply('Cette commande est réservée aux enseignants');
+            //     return;
+            // }
+            if (arg[1] == 'cancel') {
+                if (m.member.id = memberID) {
+                    m.reply("Ce n'est pas vous qui avez lancé l'appel !")
+                } else {
+                    m.reply('L\'appel a été annulé');
+                    messageAppel.delete();
+                    messageAppel = null;
+                }
+                return;
+            }
+            if (m.member.voice.channelID == null) {
+                m.reply('Vous devez être dans un Amphi pour exécuter cette commande');
+                return;
+            }
+            if (messageAppel != null) {
+                m.reply('Désolé, un appel est déjà en cours, veuillez attendre la fin');
+                return;
+            }
+            if (m.mentions.roles.size == 0) {
+                m.reply('Veuillez mentionner tous les rôles devant être présent au cours !\nVous pouvez utiliser @Groupe 1 @Groupe 2 @INFO @MATHS @DLMI');
+                return;
+            }
+
+            absents = [];
+            channelID = m.member.voice.channelID;
+            memberID = m.member.id;
+
+            m.guild.members.fetch()
+            .then(members => {
+                members.each(member => {
+                    m.mentions.roles.each(role => {
+                        if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != channelID && !absents.includes(member.id))
+                            absents.push(member.id);
+                    });
+                });
+                var message = `Liste des élèves absents au cours de ${m.member.voice.channel.parent.name} de ${m.member} :`;
+                absents.forEach(member => {
+                    message += `\n<@${member}>`;
+                });
+                message+= `\n\nRejoignez le cours dans les 15 prochaines minutes pour être marqué présent.`;
+                messageAppel = m.guild.channels.resolve('722475696869343297').send(message);
+    
+                setTimeout(() => {
+                    messageAppel.edit(messageAppel.content.replace("Rejoignez le cours dans les 15 prochaines minutes pour être marqué présent.", "L'appel est terminé"));
+                    messageAppel = null;
+                }, 1000 * 60 * 15);
+            });
+           
+        }
+
         if (m.content.startsWith('.fermer') && m.channel.name.startsWith("ticket-")) {
             m.channel.delete("Suppression demandée par " + m.member.nickname);
+        }
+    });
+
+    guichetUnique.on('voiceStateUpdate', (old, now) => {
+        if (messageAppel == null) return;
+        if (absents.includes(now.member.id)) {
+            if (now.channelID==channelID) {
+                messageAppel.edit(messageAppel.content.replace(`\n<@${now.member.id}>`, ""));
+                absents.splice(absents.indexOf(now.member.id), 1);
+            }
         }
     });
 
