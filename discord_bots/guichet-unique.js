@@ -389,7 +389,10 @@ exports.run = async () => {
                         message += `\n<@${member}>`;
                     });
                     message += `\n\nRejoignez le cours dans les 15 prochaines minutes pour être marqué présent.`;
-                    appelData[m.member.id].message = m.guild.channels.resolve('722475696869343297').send(message);
+                    m.guild.channels.resolve('722475696869343297').send(message)
+                        .then(message => {
+                            appelData[m.member.id].message = message
+                        });
 
                     setTimeout(() => {
                         appelData[m.member.id].message.edit(messageAppel.content.replace("Rejoignez le cours dans les 15 prochaines minutes pour être marqué présent.", "L'appel est terminé"));
