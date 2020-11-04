@@ -323,22 +323,28 @@ exports.run = async () => {
         };
 
         if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
-            arg = m.content.split(' ');
-            console.log(arg);
-            if (arg.length == 3) {
-                m.guild.channels.resolve(arg[1]).members.forEach(member => {
-                    member.voice.setChannel(arg[2]);
-                });
-            } else if (arg.length == 1 && m.member.voice.channelID != null) {
+            if (m.member.voice.channelID == null) {
+                m.reply('Vous devez être connecté dans un canal vocal');
+                return;
+            }
+            if (m.mentions.roles.size != 0) {
                 m.guild.members.fetch()
-                    .then(res => {
-                        res.each(member => {
-                            if (member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
-                                member.voice.setChannel(m.member.voice.channelID);
-                            }
+                .then(members => {
+                    members.each(member => {
+                        m.mentions.roles.each(role => {
+                            if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null)
+                                member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
                         });
-                    })
-                    .catch(console.error);
+                    });
+                });
+            } else {
+                m.guild.members.fetch()
+                .then(members => {
+                    members.each(member => {
+                        if (member.voice.channelID != null)
+                            member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                    });
+                });
             }
         }
 
