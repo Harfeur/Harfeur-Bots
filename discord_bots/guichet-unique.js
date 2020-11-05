@@ -420,7 +420,7 @@ exports.run = async () => {
                         });
 
                     setTimeout(() => {
-                        appelData[m.member.id].message.edit(messageAppel.content.replace("Rejoignez le cours dans les 15 prochaines minutes pour être marqué présent.", "L'appel est terminé"));
+                        appelData[m.member.id].message.edit(appelData[m.member.id].message.content.replace("Rejoignez le cours dans les 15 prochaines minutes pour être marqué présent.", "L'appel est terminé"));
                         delete appelData[m.member.id];
                     }, 1000 * 60 * 15);
                 });
