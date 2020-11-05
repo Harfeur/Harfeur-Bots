@@ -16,7 +16,8 @@ exports.run = async () => {
     var absents, channelID, memberID;
     var messageAppel = null;
 
-    var appelData = {}
+    var appelData = {};
+    var moveData = {};
 
     const guichetUnique = new Discord.Client();
 
@@ -327,13 +328,16 @@ exports.run = async () => {
                 m.reply('Vous devez être connecté dans un canal vocal');
                 return;
             }
+            moveData[m.member.id] = {}
             if (m.mentions.roles.size != 0) {
                 m.guild.members.fetch()
                 .then(members => {
                     members.each(member => {
                         m.mentions.roles.each(role => {
-                            if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null)
+                            if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null) {
                                 member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                                moveData[m.member.id][member.id] = member.voice.channelID;
+                            }
                         });
                     });
                 });
@@ -341,11 +345,26 @@ exports.run = async () => {
                 m.guild.members.fetch()
                 .then(members => {
                     members.each(member => {
-                        if (member.voice.channelID != null)
+                        if (member.voice.channelID != null) {
                             member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                            moveData[m.member.id][member.id] = member.voice.channelID;
+                        }
                     });
                 });
             }
+            moveData[m.member.id].channel = m.member.voice.channelID;
+        }
+        
+        if (m.content.startsWith('.back') && m.member.hasPermission('MOVE_MEMBERS')) {
+            if (moveData[m.member.id] == undefined) {
+                m.reply('Vous n\'avez déplacé personne pour le moment');
+                return;
+            }
+            m.guild.channels.resolve(moveData[m.member.id].channel).members.each(member => {
+                if (moveData[m.member.id][member.id] != undefined)
+                    member.voice.setChannel(moveData[m.member.id][member.id]);
+            });
+            delete moveData[m.member.id];
         }
 
         if (m.content.startsWith('.appel')) {
