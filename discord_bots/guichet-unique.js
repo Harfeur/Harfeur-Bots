@@ -324,35 +324,56 @@ exports.run = async () => {
         };
 
         if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
+            m.delete();
             if (m.member.voice.channelID == null) {
-                m.reply('Vous devez être connecté dans un canal vocal');
+                m.reply('Vous devez être connecté dans un canal vocal').then(msg => {
+                    msg.delete({
+                        timeout: 30000
+                    })
+                });
                 return;
             }
             moveData[m.member.id] = {}
-            if (m.mentions.roles.size != 0) {
-                m.guild.members.fetch()
-                .then(members => {
-                    members.each(member => {
-                        m.mentions.roles.each(role => {
-                            if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null) {
-                                member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
-                                moveData[m.member.id][member.id] = member.voice.channelID;
-                            }
+            m.reply('Déplacement en cours').then(msg => {
+                var count = 0;
+                if (m.mentions.roles.size != 0) {
+                    m.guild.members.fetch()
+                        .then(members => {
+                            members.each(member => {
+                                m.mentions.roles.each(role => {
+                                    if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null) {
+                                        member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                                        moveData[m.member.id][member.id] = member.voice.channelID;
+                                        count++;
+                                    }
+                                });
+                            });
+                            msg.edit(`${count} étudiants déplacés`).then(msg => {
+                                msg.delete({
+                                    timeout: 30000
+                                })
+                            });
                         });
-                    });
-                });
-            } else {
-                m.guild.members.fetch()
-                .then(members => {
-                    members.each(member => {
-                        if (member.voice.channelID != null) {
-                            member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
-                            moveData[m.member.id][member.id] = member.voice.channelID;
-                        }
-                    });
-                });
-            }
-            moveData[m.member.id].channel = m.member.voice.channelID;
+                } else {
+                    m.guild.members.fetch()
+                        .then(members => {
+                            members.each(member => {
+                                if (member.voice.channelID != null) {
+                                    member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                                    moveData[m.member.id][member.id] = member.voice.channelID;
+                                    count++;
+                                }
+                            });
+                            msg.edit(`${count} étudiants déplacés`).then(msg => {
+                                msg.delete({
+                                    timeout: 30000
+                                })
+                            });
+                        });
+                }
+                moveData[m.member.id].channel = m.member.voice.channelID;
+            });
+
         }
         
         if (m.content.startsWith('.back') && m.member.hasPermission('MOVE_MEMBERS')) {
@@ -414,7 +435,7 @@ exports.run = async () => {
                         message += `\n<@${member}>`;
                     });
                     message += `\n\nRejoignez le cours dans les 15 prochaines minutes pour être marqué présent.`;
-                    m.guild.channels.resolve('722475696869343297').send(message)
+                    m.channel.send(message)
                         .then(message => {
                             appelData[m.member.id].message = message
                         });
