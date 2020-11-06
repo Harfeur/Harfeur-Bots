@@ -13,7 +13,7 @@ const {
 
 exports.run = async () => {
 
-    var absents, channelID, memberID;
+    var absents, channelID, memberID, playingChannel;
     var messageAppel = null;
 
     var appelData = {};
