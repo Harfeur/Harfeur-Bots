@@ -341,7 +341,7 @@ exports.run = async () => {
                         .then(members => {
                             members.each(member => {
                                 m.mentions.roles.each(role => {
-                                    if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null) {
+                                    if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
                                         member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
                                         moveData[m.member.id][member.id] = member.voice.channelID;
                                         count++;
@@ -358,7 +358,7 @@ exports.run = async () => {
                     m.guild.members.fetch()
                         .then(members => {
                             members.each(member => {
-                                if (member.voice.channelID != null) {
+                                if (member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
                                     member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
                                     moveData[m.member.id][member.id] = member.voice.channelID;
                                     count++;
