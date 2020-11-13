@@ -323,6 +323,25 @@ exports.run = async () => {
             });
         };
 
+        if (m.content.startsWith('.random')) {
+            m.delete();
+            if (m.member.voice.channelID == null) {
+                m.reply('Vous devez être connecté dans un canal vocal').then(msg => {
+                    msg.delete({
+                        timeout: 30000
+                    })
+                });
+                return;
+            }
+            m.channel.send(`Lancement des dés ...`)
+            .then(msg => {
+                setTimeout(() => {
+                    msg.delete()
+                    msg.channel.send(`Et c'est <@${m.member.voice.channel.members.random().id}> qui a été tiré au sort ! Bon courage ;)`);
+                }, 2000);
+            });
+        }
+
         if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
             m.delete();
             if (m.member.voice.channelID == null) {
