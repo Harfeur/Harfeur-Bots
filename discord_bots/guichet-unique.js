@@ -452,7 +452,7 @@ exports.run = async () => {
             m.channel.delete("Suppression demandée par " + m.member.nickname);
         }
 
-        if (m.content.startsWith('.r') && m.member.voice.channelID) {
+        if (m.content.startsWith('.radio') && m.member.voice.channelID) {
             var args = m.content.split(' ');
             if (args.length > 1 && args[1] == 'stop' && playingChannel) {
                 playingChannel.disconnect();
