@@ -355,41 +355,44 @@ exports.run = async () => {
             moveData[m.member.id] = {}
             m.reply('Déplacement en cours').then(msg => {
                 var count = 0;
+                var membersToMove = [];
                 if (m.mentions.roles.size != 0) {
                     m.guild.members.fetch()
                         .then(members => {
                             members.each(member => {
                                 m.mentions.roles.each(role => {
                                     if (member.roles.cache.find(role2 => role2.id == role.id) && member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
-                                        member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                                        membersToMove.push(member.voice);
+                                        //member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
                                         moveData[m.member.id][member.id] = member.voice.channelID;
                                         count++;
                                     }
                                 });
                             });
-                            msg.edit(`${count} étudiants déplacés`).then(msg => {
-                                msg.delete({
-                                    timeout: 30000
-                                })
-                            });
+                            msg.edit(`${count} étudiants déplacés`);
                         });
                 } else {
                     m.guild.members.fetch()
                         .then(members => {
                             members.each(member => {
                                 if (member.voice.channelID != null && member.voice.channelID != m.member.voice.channelID) {
-                                    member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                                    membersToMove.push(member.voice);
+                                    //member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
                                     moveData[m.member.id][member.id] = member.voice.channelID;
                                     count++;
                                 }
                             });
-                            msg.edit(`${count} étudiants déplacés`).then(msg => {
-                                msg.delete({
-                                    timeout: 30000
-                                })
-                            });
+                            msg.edit(`${count} étudiants déplacés`);
                         });
                 }
+                var interv = setInterval(() => {
+                    if (membersToMove.length == 0) {
+                        clearInterval(interv);
+                        return;
+                    }
+                    var voice = membersToMove.pop();
+                    voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
+                }, 500);
                 moveData[m.member.id].channel = m.member.voice.channelID;
             });
 
@@ -400,10 +403,20 @@ exports.run = async () => {
                 m.reply('Vous n\'avez déplacé personne pour le moment');
                 return;
             }
+            var membersToMove = [];
             m.guild.channels.resolve(moveData[m.member.id].channel).members.each(member => {
                 if (moveData[m.member.id][member.id] != undefined)
-                    member.voice.setChannel(moveData[m.member.id][member.id]);
+                    membersToMove.push(member.voice);
             });
+            var channel = moveData[m.member.id][member.id];
+            var interv = setInterval(() => {
+                if (membersToMove.length == 0) {
+                    clearInterval(interv);
+                    return;
+                }
+                var voice = membersToMove.pop();
+                voice.setChannel(channel)
+            }, 500);
             delete moveData[m.member.id];
         }
 
