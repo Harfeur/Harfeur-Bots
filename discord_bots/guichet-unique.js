@@ -408,7 +408,7 @@ exports.run = async () => {
                 if (moveData[m.member.id][member.id] != undefined)
                     membersToMove.push(member.voice);
             });
-            var channel = moveData[m.member.id][member.id];
+            var channel = moveData[m.member.id].channel;
             var interv = setInterval(() => {
                 if (membersToMove.length == 0) {
                     clearInterval(interv);
