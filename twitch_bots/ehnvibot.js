@@ -8,7 +8,21 @@ var spotifyApi = new SpotifyWebApi({
     redirectUri: 'https://ehnvibot.herokuapp.com/callback'
 });
 
-spotifyApi.setAccessToken(process.env.SPOTIFY_EHNVI);
+spotifyApi.setRefreshToken(process.env.SPOTIFY_EHNVI);
+
+function refresh() {
+    spotifyApi.refreshAccessToken().then(
+    function(data) {
+      spotifyApi.setAccessToken(data.body['access_token']);
+    },
+    function(err) {
+      console.log('Could not refresh access token', err);
+    }
+  );
+}
+
+setInterval(refresh, 3600);
+refresh();
 
 exports.run = () => {
 
