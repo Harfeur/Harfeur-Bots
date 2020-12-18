@@ -34,7 +34,7 @@ exports.run = () => {
                 var canal = serveur.channels.resolve('587867579133984788');
                 if (canal == null) return;
 
-                clientpg.query(`SELECT * FROM twitch WHERE channelID=31549669;`)
+                clientpg.query(`SELECT * FROM twitch WHERE channelID=31549669 AND serverid='581148683358175233';`)
                     .then(query => {
                         var messageID = query.rows[0].messageid;
 
@@ -90,7 +90,7 @@ exports.run = () => {
                                         "embed": embed
                                     })
                                     .then(msg => {
-                                        clientpg.query(`UPDATE twitch SET messageID = ${msg.id} WHERE channelID=31549669;`)
+                                        clientpg.query(`UPDATE twitch SET messageID = ${msg.id} WHERE channelID=31549669 AND serverid='581148683358175233';`)
                                             .catch(console.error);
                                     });
                                 canal.setName("🚩en-live🚩");
@@ -112,7 +112,7 @@ exports.run = () => {
                         } else if (messageID != "0") {
                             canal.setName("🚩annonces🚩");
 
-                            clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=31549669;`)
+                            clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=31549669 AND serverid='581148683358175233';`)
                                 .catch(console.error);
 
                             twitch.channels.videos({

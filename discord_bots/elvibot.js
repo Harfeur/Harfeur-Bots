@@ -35,7 +35,7 @@ exports.run = () => {
                 if (canal == null) return;
 
                 // On récupére le dernier message du bot
-                clientpg.query(`SELECT * FROM twitch WHERE channelID=23217261;`)
+                clientpg.query(`SELECT * FROM twitch WHERE channelID=23217261 AND serverid='606951801731940352';`)
                     .then(query => {
                         var messageID = query.rows[0].messageid;
 
@@ -91,7 +91,7 @@ exports.run = () => {
                                         "embed": embed
                                     })
                                     .then(msg => {
-                                        clientpg.query(`UPDATE twitch SET messageID = ${msg.id} WHERE channelID=23217261;`)
+                                        clientpg.query(`UPDATE twitch SET messageID = ${msg.id} WHERE channelID=23217261 AND serverid='606951801731940352';`)
                                             .catch(console.error);
                                     });
                                 canal.setName("📌en-live");
@@ -113,7 +113,7 @@ exports.run = () => {
                         } else if (messageID != "0") {
                             canal.setName("📌annonces-stream");
 
-                            clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=23217261;`)
+                            clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=23217261 AND serverid='606951801731940352';`)
                                 .catch(console.error);
 
                             twitch.channels.videos({
