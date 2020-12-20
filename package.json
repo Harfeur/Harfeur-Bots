@@ -13,6 +13,7 @@
   "dependencies": {
     "@discordjs/opus": "^0.3.3",
     "axios": "^0.21.0",
+    "bitcoin-exchange-rates": "0.0.12",
     "body-parser": "^1.19.0",
     "child_process": "^1.0.2",
     "custom-env": "^2.0.1",

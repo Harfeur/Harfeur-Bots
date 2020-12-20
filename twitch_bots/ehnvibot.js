@@ -1,5 +1,6 @@
 const tmi = require('tmi.js');
 const SpotifyWebApi = require('spotify-web-api-node');
+const rates = require("bitcoin-exchange-rates");
 
 
 var spotifyApi = new SpotifyWebApi({
@@ -12,13 +13,13 @@ spotifyApi.setRefreshToken(process.env.SPOTIFY_EHNVI);
 
 function refresh() {
     spotifyApi.refreshAccessToken().then(
-    function(data) {
-      spotifyApi.setAccessToken(data.body['access_token']);
-    },
-    function(err) {
-      console.log('Could not refresh access token', err);
-    }
-  );
+        function (data) {
+            spotifyApi.setAccessToken(data.body['access_token']);
+        },
+        function (err) {
+            console.log('Could not refresh access token', err);
+        }
+    );
 }
 
 setInterval(refresh, 3600);
@@ -43,14 +44,21 @@ exports.run = () => {
         var minutes = Math.floor(millis / 60000);
         var seconds = ((millis % 60000) / 1000).toFixed(0);
         return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
-      }
+    }
 
     const twitchBot = new tmi.client(opts);
 
     twitchBot.on('message', (target, context, msg, self) => {
         if (self) return;
 
-        const commandName = msg.trim().toLowerCase();
+        const args = msg.split(" ");
+        const commandName = args[0];
+
+        if (commandName === '!help') {
+            twitchBot.say(target, '!son -> Affiche le son en cours sur Spotify');
+            twitchBot.say(target, '!eur 123 -> Convertit 123 µBTC en EURO');
+            twitchBot.say(target, '!btc 123 -> Convertit 123 EURO en µBTC');
+        }
 
         if (commandName === '!son') {
             spotifyApi.getMyCurrentPlayingTrack()
@@ -71,6 +79,26 @@ exports.run = () => {
                     console.log('Something went wrong!', err);
                 });
 
+        }
+
+        if (commandName === "!eur" && args.length >= 2) {
+            var value = parseFloat(args[1]);
+            if (isNaN(value))
+                twitchBot.say(target, "Veuillez indiquer un nombre");
+            else
+                rates.fromBTC(parseFloat(args[1]) * 0.000001, 'EUR', function (err, rate) {
+                    twitchBot.say(target, `${value} µBTC = ${rate} €`);
+                });
+        }
+
+        if (commandName === "!btc" && args.length >= 2) {
+            var value = parseFloat(args[1]);
+            if (isNaN(value))
+                twitchBot.say(target, "Veuillez indiquer un nombre");
+            else
+                rates.fromBTC(1, 'EUR', function (err, rate) {
+                    twitchBot.say(target, `${value} € = ${Math.round(value / rate * 1000000)} µBTC`);
+                });
         }
 
     });
