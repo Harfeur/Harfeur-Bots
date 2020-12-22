@@ -46,7 +46,7 @@ exports.run = () => {
                             var serveur = twitchBot.guilds.resolve(serverid);
                             if (serveur == null || !serveur.available) return;
                             var canal = serveur.channels.resolve(canalid);
-                            if (canal == null) return;
+                            if (canal == null || !canal.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) return;
 
                             if (res.stream != null) {
                                 var now = Date.now();
@@ -184,10 +184,14 @@ exports.run = () => {
                                                 });
                                                 collector.on('collect', message => {
                                                     if (message.mentions.channels.size != 0 && message.mentions.channels.first().isText()) {
-                                                        var channel = message.mentions.channels.first().id;
-                                                        clientpg.query(`UPDATE twitch SET canalid='${channel}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
-                                                        message.reply("Quel sera le message d'annonce du LIVE ? (inclure les mentions)");
-                                                        collectStart(userId);
+                                                        var channel = message.mentions.channels.first();
+                                                        if (channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
+                                                            clientpg.query(`UPDATE twitch SET canalid='${channel.id}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
+                                                            message.reply("Quel sera le message d'annonce du LIVE ? (inclure les mentions)");
+                                                            collectStart(userId);
+                                                        } else {
+                                                            message.reply("Je n'ai pas la permission d'envoyer un message dans ce canal... Merci de vérifier les permissions et de rementionner le canal une fois terminé.");
+                                                        }
                                                     } else {
                                                         message.reply("Merci de mentionner un canal texte");
                                                         collectChannel(userId);
