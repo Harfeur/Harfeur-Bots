@@ -152,7 +152,7 @@ exports.run = () => {
 
     ehnvibot.on('ready', () => {
         console.log(`Bot ${ehnvibot.user.tag} démarré !`);
-        setInterval(fetchLive, 120000);
+        setInterval(fetchLive, 60000);
         fetchLive();
     });
 

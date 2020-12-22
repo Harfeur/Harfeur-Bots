@@ -153,7 +153,7 @@ exports.run = () => {
 
     elviBot.on('ready', () => {
         console.log(`Bot ${elviBot.user.tag} démarré !`);
-        setInterval(fetchLive, 120000);
+        setInterval(fetchLive, 60000);
         fetchLive();
     });
 

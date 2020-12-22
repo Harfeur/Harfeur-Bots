@@ -271,7 +271,7 @@ exports.run = () => {
 
     twitchBot.on('ready', () => {
         console.log(`Bot ${twitchBot.user.tag} démarré !`);
-        setInterval(fetchLive, 120000);
+        setInterval(fetchLive, 60000);
         fetchLive();
     });
 
