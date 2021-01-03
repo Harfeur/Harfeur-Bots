@@ -422,7 +422,7 @@ exports.run = async () => {
 
         if (m.content.startsWith('.appel')) {
             arg = m.content.split(' ');
-            if (m.member.roles.color.id != '722475909902237819') {
+            if (m.member.roles.color.id != '722475909902237819' && m.member.roles.color.id != '790882805609005056') {
                 m.reply('Cette commande est réservée aux enseignants');
                 return;
             }
