@@ -422,7 +422,8 @@ exports.run = async () => {
 
         if (m.content.startsWith('.appel')) {
             arg = m.content.split(' ');
-            if (m.member.roles.color.id != '722475909902237819' && m.member.roles.color.id != '722473768068317194' && m.member.roles.color.id != '790882805609005056') {
+            var id_roles = ['722475909902237819','722473768068317194','790882805609005056','689750038276210688']
+            if (!id_roles.includes(m.member.roles.color.id) && !m.member.hasPermission('ADMINISTRATOR')) {
                 m.reply('Cette commande est réservée aux enseignants');
                 return;
             }
