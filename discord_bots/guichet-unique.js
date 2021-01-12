@@ -481,6 +481,34 @@ exports.run = async () => {
 
         }
 
+        if (m.content.startsWith('.poll')) {
+            const emojis = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+            var arguments = m.content.split(' ');
+            var nb = parseInt(arguments[1]);
+            if (arguments.length >= 2 && !isNaN(nb)) {
+                m.channel.send({
+                    "embed": {
+                      "title": "Sondage !",
+                      "description": arguments.length >= 3 ? arguments.splice(2).join(' ') : 'Sondage sans titre',
+                      "color": m.member.displayColor,
+                      "timestamp": Date.now(),
+                      "author": {
+                        "name": m.member.displayName,
+                        "icon_url": m.author.avatarURL()
+                      }
+                    }
+                  })
+                .then(msg => {
+                    for (let index = 1; index <= nb && index <= 10; index++) {
+                        msg.react(emojis[index]);
+                    }
+                    m.delete();
+                });
+            } else {
+                m.reply('Veuillez préciser le nombre de valeurs : `.poll 3 nom_facultatif`');
+            }
+        }
+
         if (m.content.startsWith('.fermer') && m.channel.name.startsWith("ticket-")) {
             m.channel.delete("Suppression demandée par " + m.member.nickname);
         }
