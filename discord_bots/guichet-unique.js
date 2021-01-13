@@ -20,6 +20,7 @@ exports.run = async () => {
     var moveData = {};
 
     const guichetUnique = new Discord.Client();
+    const moooove = new Discord.Client()
 
     guichetUnique.on('ready', () => {
         console.log(`Bot ${guichetUnique.user.tag} démarré !`);
@@ -369,7 +370,6 @@ exports.run = async () => {
                                     }
                                 });
                             });
-                            msg.edit(`${count} étudiants déplacés`);
                         });
                 } else {
                     m.guild.members.fetch()
@@ -382,17 +382,29 @@ exports.run = async () => {
                                     count++;
                                 }
                             });
-                            msg.edit(`${count} étudiants déplacés`);
                         });
                 }
+                var guild = moooove.guilds.resolve(m.guild.id);
                 var interv = setInterval(() => {
                     if (membersToMove.length == 0) {
                         clearInterval(interv);
+                        msg.edit(`${count} étudiants déplacés`);
                         return;
                     }
                     var voice = membersToMove.pop();
+                    var voice2;
+                    if (membersToMove.length != 0 && guild)
+                        voice2 = membersToMove.pop();
                     voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
-                }, 500);
+                    if (voice2)
+                        guild.members.fetch(voice2.id)
+                        .then(member => {
+                            member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                        })
+                        .catch(err => {
+                            voice2.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
+                        });
+                }, 50);
                 moveData[m.member.id].channel = m.member.voice.channelID;
             });
 
@@ -416,7 +428,10 @@ exports.run = async () => {
                 }
                 var voice = membersToMove.pop();
                 voice.setChannel(channel)
-            }, 500);
+                .catch(err => {
+                    console.error(err);
+                });
+            }, 100);
             delete moveData[m.member.id];
         }
 
@@ -546,4 +561,5 @@ exports.run = async () => {
     });
 
     guichetUnique.login(process.env.GUICHET_UNIQUE);
+    moooove.login(process.env.MOOOOVE);
 }
