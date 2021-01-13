@@ -344,7 +344,6 @@ exports.run = async () => {
         }
 
         if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
-            m.delete();
             if (m.member.voice.channelID == null) {
                 m.reply('Vous devez être connecté dans un canal vocal').then(msg => {
                     msg.delete({
@@ -354,9 +353,37 @@ exports.run = async () => {
                 return;
             }
             moveData[m.member.id] = {}
-            m.reply('Déplacement en cours').then(msg => {
+            m.reply('Recherche en cours ... Veuillez patienter').then(msg => {
                 var count = 0;
                 var membersToMove = [];
+
+                function moveNow() {
+                    msg.edit(`Déplacement en cours ... Veuillez patienter`);
+                    var guild = moooove.guilds.resolve(m.guild.id);
+                    var interv = setInterval(() => {
+                        if (membersToMove.length == 0) {
+                            clearInterval(interv);
+                            msg.edit(`${count} étudiants déplacés`);
+                            m.delete();
+                            return;
+                        }
+                        var voice = membersToMove.pop();
+                        var voice2;
+                        if (membersToMove.length != 0 && guild)
+                            voice2 = membersToMove.pop();
+                        voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
+                        if (voice2)
+                            guild.members.fetch(voice2.id)
+                            .then(member => {
+                                member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
+                            })
+                            .catch(err => {
+                                voice2.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
+                            });
+                    }, 50);
+                    moveData[m.member.id].channel = m.member.voice.channelID;
+                }
+
                 if (m.mentions.roles.size != 0) {
                     m.guild.members.fetch()
                         .then(members => {
@@ -370,6 +397,7 @@ exports.run = async () => {
                                     }
                                 });
                             });
+                            moveNow();
                         });
                 } else {
                     m.guild.members.fetch()
@@ -382,30 +410,9 @@ exports.run = async () => {
                                     count++;
                                 }
                             });
+                            moveNow();
                         });
                 }
-                var guild = moooove.guilds.resolve(m.guild.id);
-                var interv = setInterval(() => {
-                    if (membersToMove.length == 0) {
-                        clearInterval(interv);
-                        msg.edit(`${count} étudiants déplacés`);
-                        return;
-                    }
-                    var voice = membersToMove.pop();
-                    var voice2;
-                    if (membersToMove.length != 0 && guild)
-                        voice2 = membersToMove.pop();
-                    voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
-                    if (voice2)
-                        guild.members.fetch(voice2.id)
-                        .then(member => {
-                            member.voice.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`);
-                        })
-                        .catch(err => {
-                            voice2.setChannel(m.member.voice.channel, `Demande de ${m.member.displayName}`)
-                        });
-                }, 50);
-                moveData[m.member.id].channel = m.member.voice.channelID;
             });
 
         }
