@@ -147,7 +147,7 @@ exports.run = () => {
     }
 
     twitchBot.on('message', msg => {
-        if (msg.author.bot && !msg.content.toLowerCase().startsWith('t!')) return;
+        if (msg.author.bot || !msg.content.toLowerCase().startsWith('t!')) return;
 
         let args = msg.content.split(' ');
         let command = args[0].toLowerCase().split('t!')[1];
