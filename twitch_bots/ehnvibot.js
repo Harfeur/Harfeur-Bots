@@ -48,6 +48,8 @@ exports.run = () => {
 
     const twitchBot = new tmi.client(opts);
 
+    var countSkip = 0;
+
     twitchBot.on('message', (target, context, msg, self) => {
         if (self) return;
 
@@ -79,6 +81,27 @@ exports.run = () => {
                     console.log('Something went wrong!', err);
                 });
 
+        }
+
+        if (commandName === '!skip') {
+            if (countSkip == 2) {
+                spotifyApi.getMyCurrentPlayingTrack().then(function (data) {
+                    if (!data.body.is_playing) {
+                        twitchBot.say(target, "Aucun son en cours de lecture, je ne peux pas passer la musique");
+                    } else {
+                        spotifyApi.skipToNext();
+                        twitchBot.say(target, 'Je viens de passer la musique');
+                    }
+                });
+            } else if (countSkip == 0) {
+                twitchBot.say(target, 'Pour passer la musique, un total de 3 personnes doivent faire !skip');
+                setTimeout(() => {
+                    if (countSkip < 2)
+                        twitchBot.say(target, 'Pas assez de personnes ont voté, annulation ...');
+                    countSkip = 0;
+                }, 30000);
+            }
+            countSkip++;
         }
 
         if (commandName === "!eur" && args.length >= 2) {
