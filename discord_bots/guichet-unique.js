@@ -335,12 +335,12 @@ exports.run = async () => {
                 return;
             }
             m.channel.send(`Lancement des dés ...`)
-            .then(msg => {
-                setTimeout(() => {
-                    msg.delete()
-                    msg.channel.send(`Et c'est <@${m.member.voice.channel.members.random().id}> qui a été tiré au sort ! Bon courage ;)`);
-                }, 2000);
-            });
+                .then(msg => {
+                    setTimeout(() => {
+                        msg.delete()
+                        msg.channel.send(`Et c'est <@${m.member.voice.channel.members.random().id}> qui a été tiré au sort ! Bon courage ;)`);
+                    }, 2000);
+                });
         }
 
         if (m.content.startsWith('.move') && m.member.hasPermission('MOVE_MEMBERS')) {
@@ -443,7 +443,7 @@ exports.run = async () => {
 
         if (m.content.startsWith('.appel')) {
             arg = m.content.split(' ');
-            var id_roles = ['722475909902237819','722473768068317194','790882805609005056','689750038276210688']
+            var id_roles = ['722475909902237819', '722473768068317194', '790882805609005056', '689750038276210688']
             if (!id_roles.includes(m.member.roles.color.id) && !m.member.hasPermission('ADMINISTRATOR')) {
                 m.reply('Cette commande est réservée aux enseignants');
                 return;
@@ -542,15 +542,15 @@ exports.run = async () => {
                 return;
             }
             m.member.voice.channel.join()
-            .then(voice => {
-                if (playingChannel) playingChannel.disconnect()
-                playingChannel = voice;
-                voice.play('http://icepool.silvacast.com/GAYFM.mp3', {
-                    volume: 0.3,
-                    bitrate: 'auto'
-                });
+                .then(voice => {
+                    if (playingChannel) playingChannel.disconnect()
+                    playingChannel = voice;
+                    voice.play('http://icepool.silvacast.com/GAYFM.mp3', {
+                        volume: 0.3,
+                        bitrate: 'auto'
+                    });
 
-            })
+                })
         }
     });
 
