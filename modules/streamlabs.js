@@ -45,7 +45,12 @@ async function scrap() {
 
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === this.DONE) {
-            const dons = JSON.parse(this.responseText).data;
+            const dons;
+            try {
+                dons = JSON.parse(this.responseText).data;
+            } catch (error) {
+                return;
+            }
 
             if (dons.length != 0) {
                 clientpg.query(`UPDATE vars SET value = '${dons[0].donation_id}' WHERE name = 'streamlabs';`)
