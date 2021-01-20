@@ -45,7 +45,7 @@ async function scrap() {
 
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === this.DONE) {
-            const dons;
+            let dons;
             try {
                 dons = JSON.parse(this.responseText).data;
             } catch (error) {
