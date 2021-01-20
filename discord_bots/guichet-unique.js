@@ -416,7 +416,7 @@ exports.run = async () => {
             });
 
         }
-        
+
         if (m.content.startsWith('.back') && m.member.hasPermission('MOVE_MEMBERS')) {
             if (moveData[m.member.id] == undefined) {
                 m.reply('Vous n\'avez déplacé personne pour le moment');
@@ -427,19 +427,18 @@ exports.run = async () => {
                 if (moveData[m.member.id][member.id] != undefined)
                     membersToMove.push(member.voice);
             });
-            var channel = moveData[m.member.id].channel;
             var interv = setInterval(() => {
                 if (membersToMove.length == 0) {
                     clearInterval(interv);
+                    delete moveData[m.member.id];
                     return;
                 }
                 var voice = membersToMove.pop();
-                voice.setChannel(channel)
-                .catch(err => {
-                    console.error(err);
-                });
+                voice.setChannel(moveData[m.member.id][voice.id])
+                    .catch(err => {
+                        console.error(err);
+                    });
             }, 100);
-            delete moveData[m.member.id];
         }
 
         if (m.content.startsWith('.appel')) {
