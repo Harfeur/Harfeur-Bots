@@ -15,14 +15,18 @@ function refresh() {
     spotifyApi.refreshAccessToken().then(
         function (data) {
             spotifyApi.setAccessToken(data.body['access_token']);
-        },
-        function (err) {
-            console.log('Could not refresh access token', err);
+        })
+        .catch(function (err) {
+           if (err.statusCode == 503) {
+                setTimeout(refresh, 30000);
+           } else {
+                console.error("Could not refresh access token", err);
+           }
         }
     );
 }
 
-setInterval(refresh, 3600);
+setInterval(refresh, 3600000);
 refresh();
 
 exports.run = () => {
