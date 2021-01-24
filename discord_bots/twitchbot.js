@@ -204,7 +204,7 @@ exports.run = () => {
                                                     max: 1
                                                 });
                                                 collector.on('collect', message => {
-                                                    var msgStart = message.content;
+                                                    var msgStart = message.content.replaceAll("'", "''");
                                                     clientpg.query(`UPDATE twitch SET messagelive='${msgStart}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
                                                     message.reply("Et finalement, le message de fin qui partagera la rediff ? (sans mentions)");
                                                     collectEnd(userId);
@@ -216,7 +216,7 @@ exports.run = () => {
                                                     max: 1
                                                 });
                                                 collector.on('collect', message => {
-                                                    var msgEnd = message.content;
+                                                    var msgEnd = message.content.replaceAll("'", "''");
                                                     clientpg.query(`UPDATE twitch SET messagefin='${msgEnd}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
                                                     message.reply("C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
                                                 });
