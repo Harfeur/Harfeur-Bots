@@ -460,7 +460,6 @@ exports.run = async () => {
                 });
                 moveNow()
             });
-            }, 100);
         }
 
         if (m.content.startsWith('.appel')) {
