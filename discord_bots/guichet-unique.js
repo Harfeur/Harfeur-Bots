@@ -422,22 +422,44 @@ exports.run = async () => {
                 m.reply('Vous n\'avez déplacé personne pour le moment');
                 return;
             }
-            var membersToMove = [];
-            m.guild.channels.resolve(moveData[m.member.id].channel).members.each(member => {
-                if (moveData[m.member.id][member.id] != undefined)
-                    membersToMove.push(member.voice);
-            });
-            var interv = setInterval(() => {
-                if (membersToMove.length == 0) {
-                    clearInterval(interv);
-                    delete moveData[m.member.id];
-                    return;
+
+            m.reply('Recherche en cours ... Veuillez patienter').then(msg => {
+                var count = 0;
+                var membersToMove = [];
+
+                function moveNow() {
+                    msg.edit(`Renvoi dans le vocal d'origine en cours ... Veuillez patienter`);
+                    var guild = moooove.guilds.resolve(m.guild.id);
+                    var interv = setInterval(() => {
+                        if (membersToMove.length == 0) {
+                            clearInterval(interv);
+                            msg.edit(`${count} étudiants déplacés dans leur canal d'origine`);
+                            m.delete();
+                            delete moveData[m.member.id];
+                            return;
+                        }
+                        var voice = membersToMove.pop();
+                        var voice2;
+                        if (membersToMove.length != 0 && guild)
+                            voice2 = membersToMove.pop();
+                        voice.setChannel(moveData[m.member.id][voice.id], `Demande de ${m.member.displayName}`).catch(() => {});
+                        if (voice2)
+                            guild.members.fetch(voice2.id)
+                            .then(member => {
+                                member.voice.setChannel(moveData[m.member.id][voice.id], `Demande de ${m.member.displayName}`).catch(() => {});
+                            })
+                            .catch(() => {
+                                voice2.setChannel(moveData[m.member.id][voice.id], `Demande de ${m.member.displayName}`).catch(() => {});
+                            });
+                    }, 50);
                 }
-                var voice = membersToMove.pop();
-                voice.setChannel(moveData[m.member.id][voice.id])
-                    .catch(err => {
-                        console.error(err);
-                    });
+
+                m.guild.channels.resolve(moveData[m.member.id].channel).members.each(member => {
+                    if (moveData[m.member.id][member.id] != undefined)
+                        membersToMove.push(member.voice);
+                });
+                moveNow()
+            });
             }, 100);
         }
 
