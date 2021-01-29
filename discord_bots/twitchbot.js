@@ -27,7 +27,7 @@ exports.run = () => {
             .then(query => {
                 query.rows.forEach(row => {
 
-                    if (row.canalid == "0") return;
+                    if (row.canalid && row.canalid == "0") return;
 
                     var messageID = row.messageid;
                     var messageLive = row.messagelive;
@@ -109,7 +109,14 @@ exports.run = () => {
                                             message.edit(`${messageLive}\n<${res.stream.channel.url}>`, {
                                                 "embed": embed
                                             });
-                                        });
+                                        })
+                                        .catch(err => {
+                                            if (err.code == 10008) {
+                                                clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=${channelid} AND serverid='${serverid}';`)
+                                            } else {
+                                                console.error(err);
+                                            }
+                                        })
                                 }
                             } else if (messageID != "0") {
                                 clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=${channelid} AND serverid='${serverid}';`)
@@ -168,14 +175,12 @@ exports.run = () => {
                         msg.reply("Une erreur avec twitch est survenue, êtes vous sûr d'avoir bien saisi le pseudo ?")
                     } else {
                         var userId = res.users[0]._id;
-                        var userName = args[1];
-                        clientpg.query(`SELECT * FROM twitch WHERE channelid='${userId}' AND serverid='${msg.guild.id}';`)
+                        clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
                             .then(query => {
                                 if (query.rowCount != 0) {
                                     msg.reply('Il existe déjà une alerte avec cet utilisateur. Vous pouvez le supprimer avec t!delete');
                                 } else {
-                                    clientpg.query(`INSERT INTO twitch(channelid, serverid) VALUES (${userId}, ${msg.guild.id});`)
-                                        .then(() => {
+                                        let channelID, messageLIVE, messageFIN;
                                             console.log("Enregistrement en cours d'un nouveau streameur");
 
                                             function collectChannel(userId) {
@@ -186,7 +191,7 @@ exports.run = () => {
                                                     if (message.mentions.channels.size != 0 && message.mentions.channels.first().isText()) {
                                                         var channel = message.mentions.channels.first();
                                                         if (channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
-                                                            clientpg.query(`UPDATE twitch SET canalid='${channel.id}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
+                                                            channelID = channel.id;
                                                             message.reply("Quel sera le message d'annonce du LIVE ? (inclure les mentions)");
                                                             collectStart(userId);
                                                         } else {
@@ -204,8 +209,7 @@ exports.run = () => {
                                                     max: 1
                                                 });
                                                 collector.on('collect', message => {
-                                                    var msgStart = message.content.replaceAll("'", "''");
-                                                    clientpg.query(`UPDATE twitch SET messagelive='${msgStart}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
+                                                    messageLIVE = message.content.replaceAll("'", "''");
                                                     message.reply("Et finalement, le message de fin qui partagera la rediff ? (sans mentions)");
                                                     collectEnd(userId);
                                                 });
@@ -216,9 +220,18 @@ exports.run = () => {
                                                     max: 1
                                                 });
                                                 collector.on('collect', message => {
-                                                    var msgEnd = message.content.replaceAll("'", "''");
-                                                    clientpg.query(`UPDATE twitch SET messagefin='${msgEnd}' WHERE channelid=${userId} AND serverid='${message.guild.id}';`);
-                                                    message.reply("C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
+                                                    messageFIN = message.content.replaceAll("'", "''");
+
+
+                                                    clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${msg.guild.id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
+                                                    .then(() => {
+                                                        message.reply("C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
+                                                    })
+                                                    .catch(err => {
+                                                        console.error(err);
+                                                        msg.reply("Une erreur s'est produite avec la base de données.");
+                                                    });
+                                                    
                                                 });
                                             }
 
@@ -226,11 +239,6 @@ exports.run = () => {
 
                                             collectChannel(userId);
 
-                                        })
-                                        .catch(err => {
-                                            console.error(err);
-                                            msg.reply("Une erreur s'est produite avec la base de données.");
-                                        });
                                 }
                             })
                             .catch(err => {
