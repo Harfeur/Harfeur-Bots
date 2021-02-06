@@ -12,6 +12,20 @@ const clientpg = new Client({
 
 clientpg.connect();
 
+function refresh(spotify) {
+    spotify.refreshAccessToken().then(
+        function (data) {
+            spotify.setAccessToken(data.body['access_token']);
+        })
+    .catch(function (err) {
+        if (err.statusCode == 503) {
+            setTimeout(() => {refresh(spotify)}, 30000);
+        } else {
+            console.error("Could not refresh access token", err);
+        }
+    });
+}
+
 class Spotify extends SpotifyWebApi {
     #lastSong = "";
 
@@ -22,23 +36,8 @@ class Spotify extends SpotifyWebApi {
             redirectUri: 'https://ehnvibot.herokuapp.com/callback'
         });
         this.setRefreshToken(process.env.SPOTIFY_EHNVI);
-        setInterval(this.refresh, 3600000);
-        this.refresh();
-    }
-
-    refresh() {
-        let upThis = this;
-        this.refreshAccessToken().then(
-                function (data) {
-                    upThis.setAccessToken(data.body['access_token']);
-                })
-            .catch(function (err) {
-                if (err.statusCode == 503) {
-                    setTimeout(upThis.refresh, 30000);
-                } else {
-                    console.error("Could not refresh access token", err);
-                }
-            });
+        setInterval(() => {refresh(this)}, 3600000);
+        refresh(this);
     }
 
     updateSongList() {
