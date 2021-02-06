@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const twitch = require('twitch-api-v5');
+const spotifyApi = require('../modules/spotify.js');
 const {
     Client
 } = require('pg');
@@ -39,6 +40,8 @@ exports.run = () => {
                         var messageID = query.rows[0].messageid;
 
                         if (res.stream != null) {
+                            spotifyApi.updateSongList();
+
                             var now = Date.now()
                             var debut = new Date(res.stream.created_at)
 

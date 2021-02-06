@@ -1,33 +1,6 @@
 const tmi = require('tmi.js');
-const SpotifyWebApi = require('spotify-web-api-node');
+const spotifyApi = require('../modules/spotify.js');
 const rates = require("bitcoin-exchange-rates");
-
-
-var spotifyApi = new SpotifyWebApi({
-    clientId: process.env.SPOTIFY_CLIENTID,
-    clientSecret: process.env.SPOTIFY_CLIENTSECRET,
-    redirectUri: 'https://ehnvibot.herokuapp.com/callback'
-});
-
-spotifyApi.setRefreshToken(process.env.SPOTIFY_EHNVI);
-
-function refresh() {
-    spotifyApi.refreshAccessToken().then(
-        function (data) {
-            spotifyApi.setAccessToken(data.body['access_token']);
-        })
-        .catch(function (err) {
-           if (err.statusCode == 503) {
-                setTimeout(refresh, 30000);
-           } else {
-                console.error("Could not refresh access token", err);
-           }
-        }
-    );
-}
-
-setInterval(refresh, 3600000);
-refresh();
 
 exports.run = () => {
 
