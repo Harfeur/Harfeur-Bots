@@ -1,6 +1,7 @@
 const tmi = require('tmi.js');
 const spotifyApi = require('../modules/spotify.js');
 const rates = require("bitcoin-exchange-rates");
+const fetch = require('node-fetch');
 
 exports.run = () => {
 
@@ -99,6 +100,17 @@ exports.run = () => {
                 rates.fromBTC(1, 'EUR', function (err, rate) {
                     twitchBot.say(target, `${value} € = ${Math.round(value / rate * 1000000)} µBTC`);
                 });
+        }
+
+        if (commandName === "!baco") {
+            fetch("https://www.bacostation.fr/players/index/gettitrageplayer/idplayers/1")
+                .then(r => {
+                    return r.json()
+                })
+                .then(data => {
+                    twitchBot.say(target, "Baco Station : " + data.title_str)
+                })
+                .catch(console.error)
         }
 
     });
