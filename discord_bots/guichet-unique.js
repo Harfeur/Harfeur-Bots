@@ -233,12 +233,12 @@ exports.run = async () => {
             m.author.send("Demande envoyée avec succès");
         }
 
-        if (m.channel.id == '691579546780172288') {
-            category = m.guild.channels.resolve('691597907941392455');
+        if (m.channel.id == '821038867645071442') {
+            category = m.guild.channels.resolve('818488338205114378');
             guild = m.guild;
 
             permissions = [{
-                    id: '688085049912066057',
+                    id: '722475696869343293',
                     deny: ['VIEW_CHANNEL']
                 },
                 {
@@ -247,7 +247,7 @@ exports.run = async () => {
                 }
             ];
 
-            prof = m.member.roles.highest.id == '688088073648472101';
+            prof = m.member.roles.highest.id == '722475909902237819';
 
             if (m.mentions.members) {
                 m.mentions.members.forEach(member => {
@@ -255,7 +255,7 @@ exports.run = async () => {
                         id: member.id,
                         allow: ['VIEW_CHANNEL']
                     });
-                    if (member.roles.highest.id == '688088073648472101') prof = true;
+                    if (member.roles.highest.id == '722475909902237819') prof = true;
                 });
             };
 
