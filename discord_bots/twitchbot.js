@@ -78,21 +78,21 @@ exports.run = () => {
                                         "name": "Status",
                                         "value": res.stream.channel.status
                                     },
-                                        {
-                                            "name": "Jeu",
-                                            "value": res.stream.channel.game,
-                                            "inline": true
-                                        },
-                                        {
-                                            "name": "Durée",
-                                            "value": `${heures} h ${minutes} min`,
-                                            "inline": true
-                                        },
-                                        {
-                                            "name": "Viewers",
-                                            "value": res.stream.viewers,
-                                            "inline": true
-                                        }
+                                    {
+                                        "name": "Jeu",
+                                        "value": res.stream.channel.game,
+                                        "inline": true
+                                    },
+                                    {
+                                        "name": "Durée",
+                                        "value": `${heures} h ${minutes} min`,
+                                        "inline": true
+                                    },
+                                    {
+                                        "name": "Viewers",
+                                        "value": res.stream.viewers,
+                                        "inline": true
+                                    }
                                     ]
                                 });
                                 if (messageID == "0") {
@@ -158,7 +158,7 @@ exports.run = () => {
 
         let args = msg.content.split(' ');
         let command = args[0].toLowerCase().split('t!')[1];
-        
+
         if (command === 'help') {
             msg.reply("Pour configurer le bot, exécutez la commande `t!setup <user>` où `<user>` correspond au nom d'utilisateur Twitch.\n" +
                 "Vous pourrez ensuite suivre les indications, en choisissant ou non de mentionner des roles (par exemple @ everyone).\n\n" +
@@ -279,6 +279,33 @@ exports.run = () => {
                     }
                 });
             }
+        }
+
+        if (command === 'stats') {
+            const ToTalSeconds = (twitchBot.uptime / 1000);
+            const Days = Math.floor(ToTalSeconds / 86400);
+            const Hours = Math.floor(ToTalSeconds / 3600);
+            const Minutes = Math.floor(ToTalSeconds / 60);
+            const Seconds = Math.floor(ToTalSeconds % 60);
+            const Uptime = `${Days} Days, ${Hours} Hours, ${Minutes} Minutes & ${Seconds} Seconds`;
+            const MemoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
+            const RamUsed = Math.round(process.cpuUsage().system) / 1024;
+            const RamUsage = Math.trunc(RamUsed);
+            const BotPlatform = process.platform;
+            const MemoryUsed = Math.trunc(MemoryUsage);
+            const SystemPing = Math.round(twitchBot.ws.ping);
+            const stats = new Discord.MessageEmbed()
+                .setColor('#b700ff')
+                .setTitle("Stats")
+                .addField(" \u200B ", "**Bot Uptime** : ` " + `${Uptime}` + " `")
+                .addField(" \u200B ", "**CPU Usage** :  ` " + RamUsage + "Mb `")
+                .addField(" \u200B ", "**Memory Usage** :  ` " + MemoryUsed + "Mb `")
+                .addField(" \u200B ", "**Bot Platform** :  ` " + BotPlatform + " `")
+                .addField(" \u200B ", "**System Ping** :  ` " + SystemPing + " `")
+                .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
+                .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
+                .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
+            msg.channel.send(stats);
         }
     });
 
