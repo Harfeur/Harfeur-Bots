@@ -357,25 +357,6 @@ exports.run = async () => {
         if (m.content.startsWith('.fermer') && m.channel.name.startsWith("ticket-")) {
             m.channel.delete("Suppression demandée par " + m.member.nickname);
         }
-
-        if (m.content.startsWith('.radio') && m.member.voice.channelID) {
-            var args = m.content.split(' ');
-            if (args.length > 1 && args[1] == 'stop' && playingChannel) {
-                playingChannel.disconnect();
-                playingChannel = null;
-                return;
-            }
-            m.member.voice.channel.join()
-                .then(voice => {
-                    if (playingChannel) playingChannel.disconnect()
-                    playingChannel = voice;
-                    voice.play('http://icepool.silvacast.com/GAYFM.mp3', {
-                        volume: 0.3,
-                        bitrate: 'auto'
-                    });
-
-                })
-        }
     });
 
     guichetUnique.on('voiceStateUpdate', (old, now) => {

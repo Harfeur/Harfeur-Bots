@@ -101,8 +101,8 @@ exports.run = () => {
                                     })
                                         .then(msg => {
                                             clientpg.query(`UPDATE twitch SET messageID = '${msg.id}' WHERE channelID=${channelid} AND serverid='${serverid}';`)
-                                                .catch(console.error);
-                                        });
+                                        })
+                                        .catch(console.error);
                                 } else {
                                     canal.messages.fetch(messageID)
                                         .then(message => {
@@ -284,7 +284,7 @@ exports.run = () => {
 
     twitchBot.on('ready', () => {
         console.log(`Bot ${twitchBot.user.tag} démarré !`);
-        setInterval(fetchLive, 60000);
+        setInterval(fetchLive, 90000);
         fetchLive();
     });
 
