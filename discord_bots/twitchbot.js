@@ -158,6 +158,12 @@ exports.run = () => {
 
         let args = msg.content.split(' ');
         let command = args[0].toLowerCase().split('t!')[1];
+        
+        if (command === 'help') {
+            msg.reply("Pour configurer le bot, exécutez la commande `t!setup <user>` où `<user>` correspond au nom d'utilisateur Twitch.\n" +
+                "Vous pourrez ensuite suivre les indications, en choisissant ou non de mentionner des roles (par exemple @ everyone).\n\n" +
+                "Pour supprimer une alerte, faites `t!delete <user>`")
+        }
 
         if (!msg.member.hasPermission('ADMINISTRATOR')) {
             msg.reply('Seuls les administratuers peuvent me configurer...');
@@ -273,12 +279,6 @@ exports.run = () => {
                     }
                 });
             }
-        }
-
-        if (command === 'help') {
-            msg.reply("Pour configurer le bot, exécutez la commande `t!setup <user>` où `<user>` correspond au nom d'utilisateur Twitch.\n" +
-                "Vous pourrez ensuite suivre les indications, en choisissant ou non de mentionner des roles (par exemple @ everyone).\n\n" +
-                "Pour supprimer une alerte, faites `t!delete <user>`")
         }
     });
 
