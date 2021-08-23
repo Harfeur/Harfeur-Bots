@@ -127,6 +127,15 @@ exports.run = async () => {
             });
         };
 
+        if (m.content.startsWith('.help')) {
+            m.reply('Liste des commandes :\n' +
+            '`.random` sélectionne une personne aléatoirement (mais des fois ça beug) dans un canal audio\n' +
+            '`.move [@Role]` Déplace tout le monde (ou ceux appartenant à un certain role) vers votre canal audio\n' +
+            '`.back` Annule la commande `move` et tout le monde revient à son emplacement précédent\n' +
+            '`.appel <@Roles>` Lance un appel dans votre canal vocal. Les élèves non présents seront notifiés. Vous devez mentionner le ou les rôles des élèves concernés\n' +
+            '`.poll <nombre> [Nom]` Lance un sondage avec 1 à 10 réponses et un titre facultatif')
+        }
+
         if (m.content.startsWith('.random')) {
             m.delete();
             if (m.member.voice.channelID == null) {
@@ -286,7 +295,7 @@ exports.run = async () => {
                 return;
             }
             if (m.mentions.roles.size == 0) {
-                m.reply('Veuillez mentionner tous les rôles devant être présent au cours !\nVous pouvez utiliser @Groupe 1 @Groupe 2 @INFO @MATHS @DLMI');
+                m.reply('Veuillez mentionner tous les rôles devant être présent au cours !\nPar exemple `.appel @Groupe 1 @Groupe 2``');
                 return;
             }
 
