@@ -3,9 +3,6 @@ const twitch = require('twitch-api-v5');
 const {
     Client
 } = require('pg');
-const {
-    client
-} = require('tmi.js');
 
 const clientpg = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -302,9 +299,9 @@ exports.run = () => {
                 .addField(" \u200B ", "**Memory Usage** :  ` " + MemoryUsed + "Mb `")
                 .addField(" \u200B ", "**Bot Platform** :  ` " + BotPlatform + " `")
                 .addField(" \u200B ", "**System Ping** :  ` " + SystemPing + " `")
-                .addField(" \u200B ", "**Channels** : ` " + `${client.channels.cache.size}` + " `")
-                .addField(" \u200B ", "**Servers** : ` " + `${client.guilds.cache.size}` + " `")
-                .addField(" \u200B ", "**Users** : ` " + `${client.users.cache.size}` + " `")
+                .addField(" \u200B ", "**Channels** : ` " + `${twitchBot.channels.cache.size}` + " `")
+                .addField(" \u200B ", "**Servers** : ` " + `${twitchBot.guilds.cache.size}` + " `")
+                .addField(" \u200B ", "**Users** : ` " + `${twitchBot.users.cache.size}` + " `")
             msg.channel.send(stats);
         }
     });
