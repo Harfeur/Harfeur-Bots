@@ -162,12 +162,45 @@ exports.run = () => {
                 "Pour supprimer une alerte, faites `t!delete <user>`")
         }
 
-        if (!msg.member.hasPermission('ADMINISTRATOR')) {
-            msg.reply('Seuls les administratuers peuvent me configurer...');
+        if (command === 'stats') {
+            const ToTalSeconds = (twitchBot.uptime / 1000);
+            const Days = Math.floor(ToTalSeconds / 86400);
+            const Hours = Math.floor(ToTalSeconds / 3600);
+            const Minutes = Math.floor(ToTalSeconds / 60);
+            const Seconds = Math.floor(ToTalSeconds % 60);
+            const Uptime = `${Days} Days, ${Hours} Hours, ${Minutes} Minutes & ${Seconds} Seconds`;
+            const MemoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
+            const RamUsed = Math.round(process.cpuUsage().system) / 1024;
+            const RamUsage = Math.trunc(RamUsed);
+            const BotPlatform = process.platform;
+            const MemoryUsed = Math.trunc(MemoryUsage);
+            const SystemPing = Math.round(twitchBot.ws.ping);
+            const stats = new Discord.MessageEmbed()
+                .setColor('#b700ff')
+                .setTitle("Stats")
+                .addField(" \u200B ", "**Bot Uptime** : ` " + `${Uptime}` + " `")
+                .addField(" \u200B ", "**CPU Usage** :  ` " + RamUsage + "Mb `")
+                .addField(" \u200B ", "**Memory Usage** :  ` " + MemoryUsed + "Mb `")
+                .addField(" \u200B ", "**Bot Platform** :  ` " + BotPlatform + " `")
+                .addField(" \u200B ", "**System Ping** :  ` " + SystemPing + " `")
+                .addField(" \u200B ", "**Channels** : ` " + `${twitchBot.channels.cache.size}` + " `")
+                .addField(" \u200B ", "**Servers** : ` " + `${twitchBot.guilds.cache.size}` + " `")
+                .addField(" \u200B ", "**Users** : ` " + `${twitchBot.users.cache.size}` + " `")
+            msg.channel.send(stats);
             return;
         }
 
         if (command === 'setup') {
+            if (msg.channel.type != "GUILD_TEXT") {
+                msg.reply("La configuration ne peut se faire que dans un serveur");
+                return;
+            }
+
+            if (!msg.member.hasPermission('ADMINISTRATOR')) {
+                msg.reply('Seuls les administratuers peuvent me configurer...');
+                return;
+            }
+
             if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!setup squeezie`');
             else {
                 twitch.users.usersByName({
@@ -251,9 +284,20 @@ exports.run = () => {
                     }
                 });
             }
+            return;
         }
 
         if (command === 'delete') {
+            if (msg.channel.type != "GUILD_TEXT") {
+                msg.reply("La configuration ne peut se faire que dans un serveur");
+                return;
+            }
+
+            if (!msg.member.hasPermission('ADMINISTRATOR')) {
+                msg.reply('Seuls les administratuers peuvent me configurer...');
+                return;
+            }
+
             if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!delete squeezie`');
             else {
                 twitch.users.usersByName({
@@ -276,33 +320,7 @@ exports.run = () => {
                     }
                 });
             }
-        }
-
-        if (command === 'stats') {
-            const ToTalSeconds = (twitchBot.uptime / 1000);
-            const Days = Math.floor(ToTalSeconds / 86400);
-            const Hours = Math.floor(ToTalSeconds / 3600);
-            const Minutes = Math.floor(ToTalSeconds / 60);
-            const Seconds = Math.floor(ToTalSeconds % 60);
-            const Uptime = `${Days} Days, ${Hours} Hours, ${Minutes} Minutes & ${Seconds} Seconds`;
-            const MemoryUsage = process.memoryUsage().heapUsed / 1024 / 1024;
-            const RamUsed = Math.round(process.cpuUsage().system) / 1024;
-            const RamUsage = Math.trunc(RamUsed);
-            const BotPlatform = process.platform;
-            const MemoryUsed = Math.trunc(MemoryUsage);
-            const SystemPing = Math.round(twitchBot.ws.ping);
-            const stats = new Discord.MessageEmbed()
-                .setColor('#b700ff')
-                .setTitle("Stats")
-                .addField(" \u200B ", "**Bot Uptime** : ` " + `${Uptime}` + " `")
-                .addField(" \u200B ", "**CPU Usage** :  ` " + RamUsage + "Mb `")
-                .addField(" \u200B ", "**Memory Usage** :  ` " + MemoryUsed + "Mb `")
-                .addField(" \u200B ", "**Bot Platform** :  ` " + BotPlatform + " `")
-                .addField(" \u200B ", "**System Ping** :  ` " + SystemPing + " `")
-                .addField(" \u200B ", "**Channels** : ` " + `${twitchBot.channels.cache.size}` + " `")
-                .addField(" \u200B ", "**Servers** : ` " + `${twitchBot.guilds.cache.size}` + " `")
-                .addField(" \u200B ", "**Users** : ` " + `${twitchBot.users.cache.size}` + " `")
-            msg.channel.send(stats);
+            return;
         }
     });
 
