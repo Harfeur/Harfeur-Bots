@@ -128,16 +128,30 @@ exports.run = () => {
                                     else {
                                         canal.messages.fetch(messageID)
                                             .then(message => {
-                                                if (message.embeds.length > 0) {
-                                                    var embed = message.embeds[0]
-                                                    embed.setTitle("LIVE terminé");
-                                                    embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                                    embed.setURL(res2.videos[0].url);
-                                                    message.edit(`${messageFin} <${res2.videos[0].url}>`, {
-                                                        "embed": embed
-                                                    });
+                                                if (res2.videos.length == 0) {
+                                                    // Pas de redif
+                                                    if (message.embeds.length > 0) {
+                                                        var embed = message.embeds[0]
+                                                        embed.setTitle("LIVE terminé");
+                                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                                        message.edit(messageFin, {
+                                                            "embed": embed
+                                                        });
+                                                    } else {
+                                                        message.edit(messageFin);
+                                                    }
                                                 } else {
-                                                    message.edit(`${messageFin} <${res2.videos[0].url}>`);
+                                                    if (message.embeds.length > 0) {
+                                                        var embed = message.embeds[0]
+                                                        embed.setTitle("LIVE terminé");
+                                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                                        embed.setURL(res2.videos[0].url);
+                                                        message.edit(`${messageFin} <${res2.videos[0].url}>`, {
+                                                            "embed": embed
+                                                        });
+                                                    } else {
+                                                        message.edit(`${messageFin} <${res2.videos[0].url}>`);
+                                                    }
                                                 }
                                             });
                                     }
