@@ -205,7 +205,7 @@ exports.run = () => {
         }
 
         if (command === 'setup') {
-            if (msg.channel.type != "GUILD_TEXT") {
+            if (msg.channel.type !== "text") {
                 msg.reply("La configuration ne peut se faire que dans un serveur");
                 return;
             }
@@ -302,7 +302,7 @@ exports.run = () => {
         }
 
         if (command === 'delete') {
-            if (msg.channel.type != "GUILD_TEXT") {
+            if (msg.channel.type !== "text") {
                 msg.reply("La configuration ne peut se faire que dans un serveur");
                 return;
             }
