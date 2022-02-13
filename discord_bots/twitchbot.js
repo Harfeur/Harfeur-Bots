@@ -434,6 +434,7 @@ exports.run = () => {
                             data: modalSetup
                         }
                     });
+                    break;
 
                 case "delete":
                     var guild = twitchBot.guilds.resolve(interaction.guild_id);
