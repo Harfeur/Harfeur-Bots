@@ -377,7 +377,7 @@ exports.run = () => {
         if (!interaction.guild_id) return;
         switch (interaction.data.name) {
             case "setup":
-                twitchV2.getUsers(args[1])
+                twitchV2.getUsers(interaction.data.options[0].value)
                 .then(res => {
                     if (res.data.length == 0) {
                         reply(interaction, "Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
