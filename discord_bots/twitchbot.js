@@ -1,8 +1,13 @@
 const Discord = require('discord.js');
-const twitch = require('twitch-api-v5');
+const TwitchApi = require('node-twitch').default;
 const {
     Client
 } = require('pg');
+
+const twitchV2 = new TwitchApi({
+    client_id: process.env.TWITCH_BOT_CLIENT_ID,
+    client_secret: process.env.TWITCH_BOT_CLIENT_SECRET
+});
 
 const clientpg = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -17,118 +22,131 @@ exports.run = () => {
 
     const twitchBot = new Discord.Client();
 
-    twitch.clientID = process.env.TWITCH_APP;
-
     function fetchLive() {
         clientpg.query('SELECT * FROM twitch')
             .then(query => {
-                query.rows.forEach(row => {
+                var querySplice = []
+                while (query.rows.length) {
+                    querySplice.push(query.rows.splice(0, 100));
+                }
+                querySplice.forEach(queries => {
+                    var ids = queries.map(q => q.channelid)
+                    twitchV2.getStreams({
+                        channels: ids,
+                        first: 100
+                    }).then(resAll => {
+                        queries.forEach(row => {
+                            if (row.canalid && row.canalid == "0") return;
 
-                    if (row.canalid && row.canalid == "0") return;
+                            var messageID = row.messageid;
+                            var messageLive = row.messagelive;
+                            var messageFin = row.messagefin;
+                            var channelid = row.channelid;
+                            var canalid = row.canalid;
+                            var serverid = row.serverid;
 
-                    var messageID = row.messageid;
-                    var messageLive = row.messagelive;
-                    var messageFin = row.messagefin;
-                    var channelid = row.channelid.toString();
-                    var canalid = row.canalid;
-                    var serverid = row.serverid;
+                            var stream = resAll.data.filter(stream => stream.user_id == channelid)
+                            stream = stream.length != 0 ? stream[0] : null
 
-                    twitch.streams.channel({
-                        channelID: channelid
-                    }, (err, res) => {
-
-                        if (err) {
-                            console.error(err);
-                        } else {
                             var serveur = twitchBot.guilds.resolve(serverid);
                             if (serveur == null || !serveur.available) return;
                             var canal = serveur.channels.resolve(canalid);
                             if (canal == null || !canal.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) return;
 
-                            if (res.stream != null) {
-                                var now = Date.now();
-                                var debut = new Date(res.stream.created_at)
+                            if (serverid != "637315966631542801") return;
 
-                                var heures = Math.trunc(((now - debut) / 60000) / 60);
-                                var minutes = Math.trunc((now - debut) / 60000 - heures * 60)
+                            if (stream) {
+                                twitchV2.getUsers(channelid)
+                                    .then(twitchUser => {
 
-                                var embed = new Discord.MessageEmbed({
-                                    "color": 9442302,
-                                    "timestamp": res.stream.created_at,
-                                    "title": `🔴 ${res.stream.channel.display_name} est en LIVE`,
-                                    "url": res.stream.channel.url,
-                                    "thumbnail": {
-                                        "url": res.stream.channel.logo
-                                    },
-                                    "image": {
-                                        "url": `https://static-cdn.jtvnw.net/ttv-boxart/${res.stream.channel.game.split(" ").join("%20")}-272x380.jpg`
-                                    },
-                                    "footer": {
-                                        "text": "Début"
-                                    },
-                                    "author": {
-                                        "name": "Twitch",
-                                        "url": res.stream.channel.url,
-                                        "icon_url": "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
-                                    },
-                                    "fields": [{
-                                        "name": "Status",
-                                        "value": res.stream.channel.status
-                                    },
-                                    {
-                                        "name": "Jeu",
-                                        "value": res.stream.channel.game,
-                                        "inline": true
-                                    },
-                                    {
-                                        "name": "Durée",
-                                        "value": `${heures} h ${minutes} min`,
-                                        "inline": true
-                                    },
-                                    {
-                                        "name": "Viewers",
-                                        "value": res.stream.viewers,
-                                        "inline": true
-                                    }
-                                    ]
-                                });
-                                if (messageID == "0") {
-                                    canal.send(`${messageLive}\n<${res.stream.channel.url}>`, {
-                                        "embed": embed
-                                    })
-                                        .then(msg => {
-                                            clientpg.query(`UPDATE twitch SET messageID = '${msg.id}' WHERE channelID=${channelid} AND serverid='${serverid}';`)
-                                        })
-                                        .catch(console.error);
-                                } else {
-                                    canal.messages.fetch(messageID)
-                                        .then(message => {
-                                            message.edit(`${messageLive}\n<${res.stream.channel.url}>`, {
+                                        if (twitchUser.data.length == 0) return;
+
+                                        var user = twitchUser.data[0];
+
+                                        var now = Date.now();
+                                        var debut = new Date(stream.started_at)
+
+                                        var heures = Math.trunc(((now - debut) / 60000) / 60);
+                                        var minutes = Math.trunc((now - debut) / 60000 - heures * 60)
+
+                                        var embed = new Discord.MessageEmbed({
+                                            "color": 9442302,
+                                            "timestamp": stream.started_at,
+                                            "title": `🔴 ${user.display_name} est en LIVE`,
+                                            "url": `https://www.twitch.tv/${user.login}`,
+                                            "thumbnail": {
+                                                "url": user.profile_image_url
+                                            },
+                                            "image": {
+                                                "url": `https://static-cdn.jtvnw.net/ttv-boxart/${stream.game_name.split(" ").join("%20")}-272x380.jpg`
+                                            },
+                                            "footer": {
+                                                "text": "Début"
+                                            },
+                                            "author": {
+                                                "name": "Twitch",
+                                                "url": `https://www.twitch.tv/${user.login}`,
+                                                "icon_url": "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
+                                            },
+                                            "fields": [{
+                                                    "name": "Status",
+                                                    "value": stream.title
+                                                },
+                                                {
+                                                    "name": "Jeu",
+                                                    "value": stream.game_name,
+                                                    "inline": true
+                                                },
+                                                {
+                                                    "name": "Durée",
+                                                    "value": `${heures} h ${minutes} min`,
+                                                    "inline": true
+                                                },
+                                                {
+                                                    "name": "Viewers",
+                                                    "value": stream.viewer_count,
+                                                    "inline": true
+                                                }
+                                            ]
+                                        });
+                                        if (messageID == "0") {
+                                            canal.send(`${messageLive}\n<https://www.twitch.tv/${user.login}>`, {
                                                 "embed": embed
-                                            });
-                                        })
-                                        .catch(err => {
-                                            if (err.code == 10008) {
-                                                clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=${channelid} AND serverid='${serverid}';`)
-                                            } else {
-                                                console.error(err);
-                                            }
-                                        })
-                                }
+                                            })
+                                                .then(msg => {
+                                                    clientpg.query(`UPDATE twitch SET messageID = '${msg.id}' WHERE channelID=${channelid} AND serverid='${serverid}';`)
+                                                })
+                                                .catch(console.error);
+                                        } else {
+                                            canal.messages.fetch(messageID)
+                                                .then(message => {
+                                                    message.edit(`${messageLive}\n<https://www.twitch.tv/${user.login}>`, {
+                                                        "embed": embed
+                                                    });
+                                                })
+                                                .catch(err => {
+                                                    if (err.code == 10008) {
+                                                        clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=${channelid} AND serverid='${serverid}';`)
+                                                    } else {
+                                                        console.error(err);
+                                                    }
+                                                })
+                                        }
+                                    })
+                                    .catch(console.error)
                             } else if (messageID != "0") {
                                 clientpg.query(`UPDATE twitch SET messageID = '0' WHERE channelID=${channelid} AND serverid='${serverid}';`)
                                     .catch(console.error);
 
-                                twitch.channels.videos({
-                                    channelID: channelid,
-                                    limit: 1,
-                                    broadcast_type: 'archive'
-                                }, (err, res2) => {
-                                    if (err) console.error(err);
-                                    else {
+                                twitchV2.getVideos({
+                                        user_id: channelid,
+                                        type: "archive"
+                                    })
+                                    .then(video => {
+                                        video = video.data.length != 0 ? video.data[0] : null
                                         canal.messages.fetch(messageID)
                                             .then(message => {
-                                                if (res2.videos.length == 0) {
+                                                if (!video) {
                                                     // Pas de redif
                                                     if (message.embeds.length > 0) {
                                                         var embed = message.embeds[0]
@@ -145,21 +163,19 @@ exports.run = () => {
                                                         var embed = message.embeds[0]
                                                         embed.setTitle("LIVE terminé");
                                                         embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                                        embed.setURL(res2.videos[0].url);
-                                                        message.edit(`${messageFin} <${res2.videos[0].url}>`, {
+                                                        embed.setURL(video.url);
+                                                        message.edit(`${messageFin} <${video.url}>`, {
                                                             "embed": embed
                                                         });
                                                     } else {
-                                                        message.edit(`${messageFin} <${res2.videos[0].url}>`);
+                                                        message.edit(`${messageFin} <${video.url}>`);
                                                     }
                                                 }
                                             });
-                                    }
-                                });
+                                    }).catch(console.error)
                             }
-                        }
-
-                    });
+                        })
+                    }).catch(console.error);
                 });
             });
     }
@@ -215,16 +231,14 @@ exports.run = () => {
                 return;
             }
 
-            if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!setup squeezie`');
+            if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!setup harfeur`');
             else {
-                twitch.users.usersByName({
-                    users: args[1]
-                }, (err, res) => {
-                    if (err) {
-                        console.error(err);
-                        msg.reply("Une erreur avec twitch est survenue, êtes vous sûr d'avoir bien saisi le pseudo ?")
+                twitchV2.getUsers(args[1])
+                .then(res => {
+                    if (res.data.length == 0) {
+                        msg.reply("Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
                     } else {
-                        var userId = res.users[0]._id;
+                        var userId = res.data[0].id;
                         clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
                             .then(query => {
                                 if (query.rowCount != 0) {
@@ -296,6 +310,9 @@ exports.run = () => {
                                 msg.reply("Une erreur s'est produite avec la base de données.");
                             });
                     }
+                }).catch(err => {
+                    console.error(err);
+                    msg.reply("Une erreur est survenue avec Twitch.");
                 });
             }
             return;
@@ -312,16 +329,14 @@ exports.run = () => {
                 return;
             }
 
-            if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!delete squeezie`');
+            if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!delete harfeur`');
             else {
-                twitch.users.usersByName({
-                    users: args[1]
-                }, (err, res) => {
-                    if (err) {
-                        console.error(err);
-                        msg.reply("Une erreur avec twitch est survenue, êtes vous sûr d'avoir bien saisi le pseudo ?")
+                twitchV2.getUsers(args[1])
+                .then(res => {
+                    if (res.data.length == 0) {
+                        msg.reply("Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
                     } else {
-                        var userId = res.users[0]._id;
+                        var userId = res.data[0].id;
                         clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
                             .then(query => {
                                 if (query.rowCount != 0) {
@@ -332,6 +347,9 @@ exports.run = () => {
                                 }
                             });
                     }
+                }).catch(err => {
+                    console.error(err);
+                    msg.reply("Une erreur est survenue avec Twitch.");
                 });
             }
             return;
@@ -359,17 +377,15 @@ exports.run = () => {
         if (!interaction.guild_id) return;
         switch (interaction.data.name) {
             case "setup":
-                twitch.users.usersByName({
-                    users: interaction.data.options[0].value
-                }, (err, res) => {
-                    if (err) {
-                        console.error(err);
-                        reply(interaction, "Une erreur avec twitch est survenue, êtes vous sûr d'avoir bien saisi le pseudo ?")
+                twitchV2.getUsers(args[1])
+                .then(res => {
+                    if (res.data.length == 0) {
+                        reply(interaction, "Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
                     } else {
                         let channelID, messageLIVE, messageFIN;
                         console.log("Enregistrement en cours d'un nouveau streameur");
 
-                        let userId = res.users[0]._id;
+                        let userId = res.data[0].id;
                         clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${interaction.guild_id}';`)
                             .then(query => {
                                 if (query.rowCount !== 0) {

@@ -2,9 +2,6 @@
   "name": "harfeur-bots",
   "version": "1.0.0",
   "description": "",
-  "engines": {
-    "node": "15.x"
-  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -14,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
+    "@discordjs/voice": "^0.8.0",
     "axios": "^0.21.1",
     "bitcoin-exchange-rates": "0.0.12",
     "body-parser": "^1.19.0",
@@ -25,6 +22,7 @@
     "ffmpeg-static": "^4.2.7",
     "fs": "0.0.1-security",
     "mail-notifier": "^0.5.0",
+    "node-twitch": "^0.4.5",
     "pg": "^8.3.0",
     "spotify-web-api-node": "^5.0.0",
     "tmi.js": "^1.5.0",
