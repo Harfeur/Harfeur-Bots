@@ -441,6 +441,7 @@ exports.run = () => {
                         .then(async query => {
                             if (query.rowCount == 0) {
                                 reply(interaction, "Aucune alerte n'a été configurée sur serveur. Commencez avec /setup")
+                                return;
                             }
 
                             var options = [];
