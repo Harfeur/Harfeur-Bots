@@ -111,8 +111,8 @@ exports.run = () => {
                                         });
                                         if (messageID == "0") {
                                             canal.send(`${messageLive}\n<https://www.twitch.tv/${user.login}>`, {
-                                                "embed": embed
-                                            })
+                                                    "embed": embed
+                                                })
                                                 .then(msg => {
                                                     clientpg.query(`UPDATE twitch SET messageID = '${msg.id}' WHERE channelID=${channelid} AND serverid='${serverid}';`)
                                                 })
@@ -186,6 +186,8 @@ exports.run = () => {
         let args = msg.content.split(' ');
         let command = args[0].toLowerCase().split('t!')[1];
 
+        msg.reply("Les commands textuelles seront bientôt obsoletes. Vous pouvez utiliser les slash commandes : `/setup` ou `/delete`");
+
         if (command === 'help') {
             msg.reply("Pour configurer le bot, exécutez la commande `t!setup <user>` où `<user>` correspond au nom d'utilisateur Twitch.\n" +
                 "Vous pourrez ensuite suivre les indications, en choisissant ou non de mentionner des roles (par exemple @ everyone).\n\n" +
@@ -234,86 +236,86 @@ exports.run = () => {
             if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!setup harfeur`');
             else {
                 twitchV2.getUsers(args[1])
-                .then(res => {
-                    if (res.data.length == 0) {
-                        msg.reply("Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
-                    } else {
-                        var userId = res.data[0].id;
-                        clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
-                            .then(query => {
-                                if (query.rowCount != 0) {
-                                    msg.reply('Il existe déjà une alerte avec cet utilisateur. Vous pouvez le supprimer avec t!delete');
-                                } else {
-                                    let channelID, messageLIVE, messageFIN;
-                                    console.log("Enregistrement en cours d'un nouveau streameur");
+                    .then(res => {
+                        if (res.data.length == 0) {
+                            msg.reply("Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
+                        } else {
+                            var userId = res.data[0].id;
+                            clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
+                                .then(query => {
+                                    if (query.rowCount != 0) {
+                                        msg.reply('Il existe déjà une alerte avec cet utilisateur. Vous pouvez le supprimer avec t!delete');
+                                    } else {
+                                        let channelID, messageLIVE, messageFIN;
+                                        console.log("Enregistrement en cours d'un nouveau streameur");
 
-                                    function collectChannel(userId) {
-                                        const collector = new Discord.MessageCollector(msg.channel, m => m.author.id === msg.author.id, {
-                                            max: 1
-                                        });
-                                        collector.on('collect', message => {
-                                            if (message.mentions.channels.size != 0 && message.mentions.channels.first().isText()) {
-                                                var channel = message.mentions.channels.first();
-                                                if (channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
-                                                    channelID = channel.id;
-                                                    message.reply("Quel sera le message d'annonce du LIVE ? (inclure les mentions)");
-                                                    collectStart(userId);
+                                        function collectChannel(userId) {
+                                            const collector = new Discord.MessageCollector(msg.channel, m => m.author.id === msg.author.id, {
+                                                max: 1
+                                            });
+                                            collector.on('collect', message => {
+                                                if (message.mentions.channels.size != 0 && message.mentions.channels.first().isText()) {
+                                                    var channel = message.mentions.channels.first();
+                                                    if (channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
+                                                        channelID = channel.id;
+                                                        message.reply("Quel sera le message d'annonce du LIVE ? (inclure les mentions)");
+                                                        collectStart(userId);
+                                                    } else {
+                                                        message.reply("Je n'ai pas la permission d'envoyer un message dans ce canal... Merci de vérifier les permissions et de rementionner le canal une fois terminé.");
+                                                    }
                                                 } else {
-                                                    message.reply("Je n'ai pas la permission d'envoyer un message dans ce canal... Merci de vérifier les permissions et de rementionner le canal une fois terminé.");
+                                                    message.reply("Merci de mentionner un canal texte");
+                                                    collectChannel(userId);
                                                 }
-                                            } else {
-                                                message.reply("Merci de mentionner un canal texte");
-                                                collectChannel(userId);
-                                            }
-                                        });
+                                            });
+                                        }
+
+                                        function collectStart(userId) {
+                                            const collector = new Discord.MessageCollector(msg.channel, m => m.author.id === msg.author.id, {
+                                                max: 1
+                                            });
+                                            collector.on('collect', message => {
+                                                messageLIVE = message.content.replaceAll("'", "''");
+                                                message.reply("Et finalement, le message de fin qui partagera la rediff ? (sans mentions)");
+                                                collectEnd(userId);
+                                            });
+                                        }
+
+                                        function collectEnd(userId) {
+                                            const collector = new Discord.MessageCollector(msg.channel, m => m.author.id === msg.author.id, {
+                                                max: 1
+                                            });
+                                            collector.on('collect', message => {
+                                                messageFIN = message.content.replaceAll("'", "''");
+
+
+                                                clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${msg.guild.id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
+                                                    .then(() => {
+                                                        message.reply("C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
+                                                    })
+                                                    .catch(err => {
+                                                        console.error(err);
+                                                        msg.reply("Une erreur s'est produite avec la base de données.");
+                                                    });
+
+                                            });
+                                        }
+
+                                        msg.reply('Dans quel channel doit-je afficher les alertes de LIVE ?');
+
+                                        collectChannel(userId);
+
                                     }
-
-                                    function collectStart(userId) {
-                                        const collector = new Discord.MessageCollector(msg.channel, m => m.author.id === msg.author.id, {
-                                            max: 1
-                                        });
-                                        collector.on('collect', message => {
-                                            messageLIVE = message.content.replaceAll("'", "''");
-                                            message.reply("Et finalement, le message de fin qui partagera la rediff ? (sans mentions)");
-                                            collectEnd(userId);
-                                        });
-                                    }
-
-                                    function collectEnd(userId) {
-                                        const collector = new Discord.MessageCollector(msg.channel, m => m.author.id === msg.author.id, {
-                                            max: 1
-                                        });
-                                        collector.on('collect', message => {
-                                            messageFIN = message.content.replaceAll("'", "''");
-
-
-                                            clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${msg.guild.id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
-                                                .then(() => {
-                                                    message.reply("C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
-                                                })
-                                                .catch(err => {
-                                                    console.error(err);
-                                                    msg.reply("Une erreur s'est produite avec la base de données.");
-                                                });
-
-                                        });
-                                    }
-
-                                    msg.reply('Dans quel channel doit-je afficher les alertes de LIVE ?');
-
-                                    collectChannel(userId);
-
-                                }
-                            })
-                            .catch(err => {
-                                console.error(err);
-                                msg.reply("Une erreur s'est produite avec la base de données.");
-                            });
-                    }
-                }).catch(err => {
-                    console.error(err);
-                    msg.reply("Une erreur est survenue avec Twitch.");
-                });
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    msg.reply("Une erreur s'est produite avec la base de données.");
+                                });
+                        }
+                    }).catch(err => {
+                        console.error(err);
+                        msg.reply("Une erreur est survenue avec Twitch.");
+                    });
             }
             return;
         }
@@ -332,25 +334,25 @@ exports.run = () => {
             if (args.length != 2) msg.reply('Vous devez indiquer le nom de votre chaine en paramètre. Par exemple `t!delete harfeur`');
             else {
                 twitchV2.getUsers(args[1])
-                .then(res => {
-                    if (res.data.length == 0) {
-                        msg.reply("Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
-                    } else {
-                        var userId = res.data[0].id;
-                        clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
-                            .then(query => {
-                                if (query.rowCount != 0) {
-                                    clientpg.query(`DELETE FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`);
-                                    msg.reply("Alerte supprimée avec succès !")
-                                } else {
-                                    msg.reply('Aucune alerte sur ce serveur. Vous pouvez commencer avec t!setup');
-                                }
-                            });
-                    }
-                }).catch(err => {
-                    console.error(err);
-                    msg.reply("Une erreur est survenue avec Twitch.");
-                });
+                    .then(res => {
+                        if (res.data.length == 0) {
+                            msg.reply("Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
+                        } else {
+                            var userId = res.data[0].id;
+                            clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`)
+                                .then(query => {
+                                    if (query.rowCount != 0) {
+                                        clientpg.query(`DELETE FROM twitch WHERE channelid=${userId} AND serverid='${msg.guild.id}';`);
+                                        msg.reply("Alerte supprimée avec succès !")
+                                    } else {
+                                        msg.reply('Aucune alerte sur ce serveur. Vous pouvez commencer avec t!setup');
+                                    }
+                                });
+                        }
+                    }).catch(err => {
+                        console.error(err);
+                        msg.reply("Une erreur est survenue avec Twitch.");
+                    });
             }
             return;
         }
@@ -373,51 +375,183 @@ exports.run = () => {
         });
     }
 
+    const modalSetup = {
+        title: 'Paramétrer une nouvelle alerte',
+        custom_id: 'modal_setup',
+        components: [{
+                type: 1,
+                components: [{
+                    type: 4,
+                    style: 1,
+                    custom_id: 'streamer',
+                    label: 'Chaine Twitch',
+                    placeholder: 'harfeur',
+                    required: true
+                }]
+            },
+            {
+                type: 1,
+                components: [{
+                    type: 4,
+                    style: 2,
+                    custom_id: 'start',
+                    label: 'Message d\'alerte en début de LIVE',
+                    placeholder: 'Le live commence @everyone !',
+                    required: true
+                }]
+            },
+            {
+                type: 1,
+                components: [{
+                    type: 4,
+                    style: 2,
+                    custom_id: 'end',
+                    label: 'Message de fin de LIVE',
+                    placeholder: 'Le live est terminé. Voici la redif :',
+                    required: true
+                }]
+            },
+        ]
+    }
+
     twitchBot.ws.on('INTERACTION_CREATE', async interaction => {
-        if (!interaction.guild_id) return;
-        switch (interaction.data.name) {
-            case "setup":
-                twitchV2.getUsers(interaction.data.options[0].value)
-                .then(res => {
-                    if (res.data.length == 0) {
-                        reply(interaction, "Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
-                    } else {
-                        let channelID, messageLIVE, messageFIN;
-                        console.log("Enregistrement en cours d'un nouveau streameur");
+        if (!interaction.guild_id) {
+            reply(interaction, "Ce bot ne fonctionne que dans des serveurs pour le moment.");
+            return;
+        };
+        // VERIFY ADMIN
+        var permissions = parseInt(interaction.member.permissions).toString(2);
+        if (permissions.length < 4 || permissions[permissions.length - 4] != 1) {
+            reply(interaction, "Désolé, mais cette commande est réservée aux administrateurs du serveur.");
+            return;
+        }
+        if (interaction.type == 2)
+            switch (interaction.data.name) {
+                case "setup":
+                    twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
+                        data: {
+                            type: 9,
+                            data: modalSetup
+                        }
+                    });
 
-                        let userId = res.data[0].id;
-                        clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${interaction.guild_id}';`)
-                            .then(query => {
-                                if (query.rowCount !== 0) {
-                                    reply(interaction, 'Il existe déjà une alerte avec cet utilisateur. Vous pouvez le supprimer avec t!delete');
-                                } else {
-                                    let channel = twitchBot.channels.resolve(interaction.data.options[1].value);
-                                    if (!channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
-                                        reply(interaction, "Je n'ai pas la permission d'envoyer un message dans ce canal... Merci de vérifier les permissions et de refaire la commande une fois terminé.");
-                                    } else {
-                                        channelID = channel.id;
-                                        messageLIVE = interaction.data.options[2].value;
-                                        messageFIN = interaction.data.options[3].value;
+                case "delete":
+                    var guild = twitchBot.guilds.resolve(interaction.guild_id);
+                    clientpg.query(`SELECT * FROM twitch WHERE serverid='${interaction.guild_id}';`)
+                        .then(async query => {
+                            if (query.rowCount == 0) {
+                                reply(interaction, "Aucune alerte n'a été configurée sur serveur. Commencez avec /setup")
+                            }
 
-                                        clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${interaction.guild_id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
-                                            .then(() => {
-                                                reply(interaction, "C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
-                                            })
-                                            .catch(err => {
-                                                console.error(err);
-                                                reply(interaction, "Une erreur s'est produite avec la base de données.");
-                                            });
+                            var options = [];
+
+                            for (var i = 0; i < query.rowCount && i < 25; i++) {
+                                var q = query.rows[i];
+                                var user = await twitchV2.getUsers(q.channelid);
+                                options.push({
+                                    label: user.data[0].display_name,
+                                    value: q.channelid,
+                                    description: guild.channels.resolve(q.canalid) ? guild.channels.resolve(q.canalid).name : `Canal n°${q.canalid} introuvable`
+                                })
+                            }
+
+                            twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
+                                data: {
+                                    type: 4,
+                                    data: {
+                                        content: "Merci de choisir une alerte à supprimer",
+                                        components: [{
+                                            "type": 1,
+                                            "components": [{
+                                                "type": 3,
+                                                "custom_id": "select_delete",
+                                                "options": options,
+                                                "placeholder": "Choisissez une alerte à supprimer"
+                                            }]
+                                        }]
                                     }
                                 }
                             });
-                    }
-                });
-                break;
-
-            case "delete":
-                break;
+                        });
+                    break;
+            }
+        else if (interaction.type == 3) {
+            switch (interaction.data.custom_id) {
+                case "select_delete":
+                    clientpg.query(`DELETE FROM twitch WHERE channelid=${interaction.data.values[0]} AND serverid='${interaction.guild_id}';`)
+                    .then(() => {
+                        twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 7,
+                                data: {
+                                    content: "Suppression effectuée avec succès",
+                                    components: []
+                                }
+                            }
+                        });
+                    }).catch(err => {
+                        twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
+                            data: {
+                                type: 7,
+                                data: {
+                                    content: "Erreur avec la base de données !",
+                                    components: []
+                                }
+                            }
+                        });
+                        console.error(err);
+                    });
+                    break;
+                
+                default:
+                    break;
+            }
         }
-    })
+        else if (interaction.type == 5) {
+            switch (interaction.data.custom_id) {
+                case "modal_setup":
+                    twitchV2.getUsers(interaction.data.components[0].components[0].value)
+                        .then(res => {
+                            if (res.data.length == 0) {
+                                reply(interaction, "Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
+                            } else {
+                                let channelID, messageLIVE, messageFIN;
+                                console.log("Enregistrement en cours d'un nouveau streameur");
+
+                                let userId = res.data[0].id;
+                                clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${interaction.guild_id}';`)
+                                    .then(query => {
+                                        if (query.rowCount !== 0) {
+                                            reply(interaction, 'Il existe déjà une alerte avec cet utilisateur. Vous pouvez le supprimer avec /delete');
+                                        } else {
+                                            let channel = twitchBot.channels.resolve(interaction.channel_id);
+                                            if (!channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
+                                                reply(interaction, "Je n'ai pas la permission d'envoyer un message dans ce canal... Merci de vérifier les permissions et de refaire la commande une fois terminé.");
+                                            } else {
+                                                channelID = channel.id;
+                                                messageLIVE = interaction.data.components[1].components[0].value.replaceAll("'", "''");
+                                                messageFIN = interaction.data.components[2].components[0].value.replaceAll("'", "''");
+
+                                                clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${interaction.guild_id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
+                                                    .then(() => {
+                                                        reply(interaction, "C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
+                                                    })
+                                                    .catch(err => {
+                                                        console.error(err);
+                                                        reply(interaction, "Une erreur s'est produite avec la base de données.");
+                                                    });
+                                            }
+                                        }
+                                    });
+                            }
+                        });
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    });
 
     twitchBot.login(process.env.TWITCHBOT);
 
