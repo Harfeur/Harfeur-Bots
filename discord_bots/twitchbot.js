@@ -4,6 +4,14 @@ const {
     Client
 } = require('pg');
 
+const languages = ["fr", "en"]
+const translations = {}
+languages.forEach(lang => {
+    translations[lang] = require(`./langs/strings_${lang}.json`)
+});
+
+const sprintf = require('sprintf-js').sprintf;
+
 const twitchV2 = new TwitchApi({
     client_id: process.env.TWITCH_BOT_CLIENT_ID,
     client_secret: process.env.TWITCH_BOT_CLIENT_SECRET
@@ -23,7 +31,7 @@ exports.run = () => {
     const twitchBot = new Discord.Client();
 
     function fetchLive() {
-        clientpg.query('SELECT * FROM twitch')
+        clientpg.query('SELECT * FROM twitch LEFT JOIN guilds ON twitch.serverid = guilds.guild_id')
             .then(query => {
                 var querySplice = []
                 while (query.rows.length) {
@@ -44,6 +52,7 @@ exports.run = () => {
                             var channelid = row.channelid;
                             var canalid = row.canalid;
                             var serverid = row.serverid;
+                            var lang = row.language ? row.language : "fr";
 
                             var stream = resAll.data.filter(stream => stream.user_id == channelid)
                             stream = stream.length != 0 ? stream[0] : null
@@ -72,7 +81,7 @@ exports.run = () => {
                                         var embed = new Discord.MessageEmbed({
                                             "color": 9442302,
                                             "timestamp": stream.started_at,
-                                            "title": `🔴 ${user.display_name} est en LIVE`,
+                                            "title": "🔴 " + sprintf(translations[lang]["TITLE"], user.display_name),
                                             "url": `https://www.twitch.tv/${user.login}`,
                                             "thumbnail": {
                                                 "url": user.profile_image_url
@@ -81,7 +90,7 @@ exports.run = () => {
                                                 "url": `https://static-cdn.jtvnw.net/ttv-boxart/${stream.game_name.split(" ").join("%20")}-272x380.jpg`
                                             },
                                             "footer": {
-                                                "text": "Début"
+                                                "text": translations[lang]["START"]
                                             },
                                             "author": {
                                                 "name": "Twitch",
@@ -89,21 +98,21 @@ exports.run = () => {
                                                 "icon_url": "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
                                             },
                                             "fields": [{
-                                                    "name": "Status",
+                                                    "name": translations[lang]["STATUS"],
                                                     "value": stream.title
                                                 },
                                                 {
-                                                    "name": "Jeu",
+                                                    "name": translations[lang]["GAME"],
                                                     "value": stream.game_name,
                                                     "inline": true
                                                 },
                                                 {
-                                                    "name": "Durée",
-                                                    "value": `${heures} h ${minutes} min`,
+                                                    "name": translations[lang]["LENGTH"],
+                                                    "value": sprintf(translations[lang]["LENGTH_TIME"], heures, minutes),
                                                     "inline": true
                                                 },
                                                 {
-                                                    "name": "Viewers",
+                                                    "name": translations[lang]["VIEWERS"],
                                                     "value": stream.viewer_count,
                                                     "inline": true
                                                 }
@@ -150,7 +159,7 @@ exports.run = () => {
                                                     // Pas de redif
                                                     if (message.embeds.length > 0) {
                                                         var embed = message.embeds[0]
-                                                        embed.setTitle("LIVE terminé");
+                                                        embed.setTitle(translations[lang]["LIVE_END"]);
                                                         embed.fields = embed.fields.filter(field => field.name != "Viewers");
                                                         message.edit(messageFin, {
                                                             "embed": embed
@@ -161,7 +170,7 @@ exports.run = () => {
                                                 } else {
                                                     if (message.embeds.length > 0) {
                                                         var embed = message.embeds[0]
-                                                        embed.setTitle("LIVE terminé");
+                                                        embed.setTitle(translations[lang]["LIVE_END"]);
                                                         embed.fields = embed.fields.filter(field => field.name != "Viewers");
                                                         embed.setURL(video.url);
                                                         message.edit(`${messageFin} <${video.url}>`, {
@@ -364,10 +373,10 @@ exports.run = () => {
         fetchLive();
     });
 
-    function reply(interaction, message) {
+    function reply(interaction, message, type=4) {
         twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
             data: {
-                type: 4,
+                type: type,
                 data: {
                     content: message
                 }
@@ -375,186 +384,188 @@ exports.run = () => {
         });
     }
 
-    const modalSetup = {
-        title: 'Paramétrer une nouvelle alerte',
-        custom_id: 'modal_setup',
-        components: [{
-                type: 1,
-                components: [{
-                    type: 4,
-                    style: 1,
-                    custom_id: 'streamer',
-                    label: 'Chaine Twitch',
-                    placeholder: 'harfeur',
-                    required: true
-                }]
-            },
-            {
-                type: 1,
-                components: [{
-                    type: 4,
-                    style: 2,
-                    custom_id: 'start',
-                    label: 'Message d\'alerte en début de LIVE',
-                    placeholder: 'Le live commence @everyone !',
-                    required: true
-                }]
-            },
-            {
-                type: 1,
-                components: [{
-                    type: 4,
-                    style: 2,
-                    custom_id: 'end',
-                    label: 'Message de fin de LIVE',
-                    placeholder: 'Le live est terminé. Voici la redif :',
-                    required: true
-                }]
-            },
-        ]
-    }
-
     twitchBot.ws.on('INTERACTION_CREATE', async interaction => {
         if (!interaction.guild_id) {
-            reply(interaction, "Ce bot ne fonctionne que dans des serveurs pour le moment.");
+            reply(interaction, "Ce bot ne fonctionne que dans des serveurs pour le moment.\nThis bot only works with guilds for now.");
             return;
         };
-        // VERIFY ADMIN
-        var permissions = parseInt(interaction.member.permissions).toString(2);
-        if (permissions.length < 4 || permissions[permissions.length - 4] != 1) {
-            reply(interaction, "Désolé, mais cette commande est réservée aux administrateurs du serveur.");
-            return;
-        }
-        if (interaction.type == 2)
-            switch (interaction.data.name) {
-                case "setup":
-                    twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
-                        data: {
-                            type: 9,
-                            data: modalSetup
-                        }
-                    });
-                    break;
-
-                case "delete":
-                    var guild = twitchBot.guilds.resolve(interaction.guild_id);
-                    clientpg.query(`SELECT * FROM twitch WHERE serverid='${interaction.guild_id}';`)
-                        .then(async query => {
-                            if (query.rowCount == 0) {
-                                reply(interaction, "Aucune alerte n'a été configurée sur serveur. Commencez avec /setup")
-                                return;
-                            }
-
-                            var options = [];
-
-                            for (var i = 0; i < query.rowCount && i < 25; i++) {
-                                var q = query.rows[i];
-                                var user = await twitchV2.getUsers(q.channelid);
-                                options.push({
-                                    label: user.data[0].display_name,
-                                    value: q.channelid,
-                                    description: guild.channels.resolve(q.canalid) ? guild.channels.resolve(q.canalid).name : `Canal n°${q.canalid} introuvable`
-                                })
-                            }
-
+        clientpg.query(`SELECT language FROM guilds WHERE guild_id='${interaction.guild_id}'`)
+            .then(query => {
+                var lang = query.rowCount != 0 ? query.rows[0].language : "fr"
+                
+                // VERIFY ADMIN
+                var permissions = parseInt(interaction.member.permissions).toString(2);
+                if (permissions.length < 4 || permissions[permissions.length - 4] != 1) {
+                    reply(interaction, translations[lang]["NO_RIGHTS"]);
+                    return;
+                }
+                if (interaction.type == 2)
+                    switch (interaction.data.name) {
+                        case "setup":
                             twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
                                 data: {
-                                    type: 4,
+                                    type: 9,
                                     data: {
-                                        content: "Merci de choisir une alerte à supprimer",
+                                        title: translations[lang]["SETUP_TITLE"],
+                                        custom_id: 'modal_setup',
                                         components: [{
-                                            "type": 1,
-                                            "components": [{
-                                                "type": 3,
-                                                "custom_id": "select_delete",
-                                                "options": options,
-                                                "placeholder": "Choisissez une alerte à supprimer"
-                                            }]
-                                        }]
+                                                type: 1,
+                                                components: [{
+                                                    type: 4,
+                                                    style: 1,
+                                                    custom_id: 'streamer',
+                                                    label: translations[lang]["SETUP_STREAMER"],
+                                                    placeholder: 'harfeur',
+                                                    required: true
+                                                }]
+                                            },
+                                            {
+                                                type: 1,
+                                                components: [{
+                                                    type: 4,
+                                                    style: 2,
+                                                    custom_id: 'start',
+                                                    label: translations[lang]["SETUP_START"],
+                                                    placeholder: translations[lang]["SETUP_START_PLACEHOLDER"],
+                                                    required: true
+                                                }]
+                                            },
+                                            {
+                                                type: 1,
+                                                components: [{
+                                                    type: 4,
+                                                    style: 2,
+                                                    custom_id: 'end',
+                                                    label: translations[lang]["SETUP_END"],
+                                                    placeholder: translations[lang]["SETUP_END_PLACEHOLDER"],
+                                                    required: true
+                                                }]
+                                            },
+                                        ]
                                     }
                                 }
                             });
-                        });
-                    break;
-            }
-        else if (interaction.type == 3) {
-            switch (interaction.data.custom_id) {
-                case "select_delete":
-                    clientpg.query(`DELETE FROM twitch WHERE channelid=${interaction.data.values[0]} AND serverid='${interaction.guild_id}';`)
-                    .then(() => {
-                        twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
-                            data: {
-                                type: 7,
-                                data: {
-                                    content: "Suppression effectuée avec succès",
-                                    components: []
-                                }
-                            }
-                        });
-                    }).catch(err => {
-                        twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
-                            data: {
-                                type: 7,
-                                data: {
-                                    content: "Erreur avec la base de données !",
-                                    components: []
-                                }
-                            }
-                        });
-                        console.error(err);
-                    });
-                    break;
-                
-                default:
-                    break;
-            }
-        }
-        else if (interaction.type == 5) {
-            switch (interaction.data.custom_id) {
-                case "modal_setup":
-                    twitchV2.getUsers(interaction.data.components[0].components[0].value)
-                        .then(res => {
-                            if (res.data.length == 0) {
-                                reply(interaction, "Aucun résultat, êtes vous sûr d'avoir bien saisi le pseudo ?")
-                            } else {
-                                let channelID, messageLIVE, messageFIN;
-                                console.log("Enregistrement en cours d'un nouveau streameur");
+                            break;
 
-                                let userId = res.data[0].id;
-                                clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${interaction.guild_id}';`)
-                                    .then(query => {
-                                        if (query.rowCount !== 0) {
-                                            reply(interaction, 'Il existe déjà une alerte avec cet utilisateur. Vous pouvez le supprimer avec /delete');
-                                        } else {
-                                            let channel = twitchBot.channels.resolve(interaction.channel_id);
-                                            if (!channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
-                                                reply(interaction, "Je n'ai pas la permission d'envoyer un message dans ce canal... Merci de vérifier les permissions et de refaire la commande une fois terminé.");
-                                            } else {
-                                                channelID = channel.id;
-                                                messageLIVE = interaction.data.components[1].components[0].value.replaceAll("'", "''");
-                                                messageFIN = interaction.data.components[2].components[0].value.replaceAll("'", "''");
+                        case "delete":
+                            var guild = twitchBot.guilds.resolve(interaction.guild_id);
+                            clientpg.query(`SELECT * FROM twitch WHERE serverid='${interaction.guild_id}';`)
+                                .then(async query => {
+                                    if (query.rowCount == 0) {
+                                        reply(interaction, translations[lang]["DELETE_EMPTY"])
+                                        return;
+                                    }
 
-                                                clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${interaction.guild_id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
-                                                    .then(() => {
-                                                        reply(interaction, "C'est fini ! Les notifications apparaitront lors du prochain LIVE, ou bientot si un LIVE est déjà en cours.");
-                                                    })
-                                                    .catch(err => {
-                                                        console.error(err);
-                                                        reply(interaction, "Une erreur s'est produite avec la base de données.");
-                                                    });
+                                    var options = [];
+
+                                    for (var i = 0; i < query.rowCount && i < 25; i++) {
+                                        var q = query.rows[i];
+                                        var user = await twitchV2.getUsers(q.channelid);
+                                        options.push({
+                                            label: user.data[0].display_name,
+                                            value: q.channelid,
+                                            description: guild.channels.resolve(q.canalid) ? guild.channels.resolve(q.canalid).name : `Canal n°${q.canalid} introuvable`
+                                        })
+                                    }
+
+                                    twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
+                                        data: {
+                                            type: 4,
+                                            data: {
+                                                content: translations[lang]["DELETE_CHOOSE_TITLE"],
+                                                components: [{
+                                                    "type": 1,
+                                                    "components": [{
+                                                        "type": 3,
+                                                        "custom_id": "select_delete",
+                                                        "options": options,
+                                                        "placeholder": translations[lang]["DELETE_CHOOSE_PLACEHOLDER"]
+                                                    }]
+                                                }]
                                             }
                                         }
                                     });
-                            }
-                        });
-                    break;
+                                });
+                            break;
 
-                default:
-                    break;
-            }
-        }
+                        case "language":
+                            var guild = interaction.guild_id;
+                            var lang = interaction.data.options[0].value
+                            clientpg.query(`INSERT INTO guilds(guild_id, language) VALUES (${guild},'${lang}')
+                            ON CONFLICT (guild_id) DO UPDATE SET language = '${lang}';`)
+                                .then(() => {
+                                    reply(interaction, translations[lang]["LANGUAGE_UPDATE"])
+                                })
+                                .catch(err => {
+                                    reply(interaction, translations[lang]["DATABASE_ERROR"]);
+                                    console.error(err);
+                                })
+                            break;
+                    }
+                else if (interaction.type == 3) {
+                    switch (interaction.data.custom_id) {
+                        case "select_delete":
+                            clientpg.query(`DELETE FROM twitch WHERE channelid=${interaction.data.values[0]} AND serverid='${interaction.guild_id}';`)
+                                .then(() => {
+                                    reply(interaction, translations[lang]["DELETE_SUCCESS"], 7);
+                                }).catch(err => {
+                                    reply(interaction, translations[lang]["DATABASE_ERROR"], 7);
+                                    console.error(err);
+                                });
+                            break;
+
+                        default:
+                            break;
+                    }
+                } else if (interaction.type == 5) {
+                    switch (interaction.data.custom_id) {
+                        case "modal_setup":
+                            twitchV2.getUsers(interaction.data.components[0].components[0].value)
+                                .then(res => {
+                                    if (res.data.length == 0) {
+                                        reply(interaction, translations[lang]["SETUP_NO_RESULT"])
+                                    } else {
+                                        let channelID, messageLIVE, messageFIN;
+                                        console.log("Enregistrement en cours d'un nouveau streameur");
+
+                                        let userId = res.data[0].id;
+                                        clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${interaction.guild_id}';`)
+                                            .then(query => {
+                                                if (query.rowCount !== 0) {
+                                                    reply(interaction, translations[lang]["SETUP_ALREADY"]);
+                                                } else {
+                                                    let channel = twitchBot.channels.resolve(interaction.channel_id);
+                                                    if (!channel.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) {
+                                                        reply(interaction, translations[lang]["SETUP_NO_PERMISSIONS"]);
+                                                    } else {
+                                                        channelID = channel.id;
+                                                        messageLIVE = interaction.data.components[1].components[0].value.replaceAll("'", "''");
+                                                        messageFIN = interaction.data.components[2].components[0].value.replaceAll("'", "''");
+
+                                                        clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${interaction.guild_id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
+                                                            .then(() => {
+                                                                reply(interaction, translations[lang]["SETUP_FINISH"]);
+                                                            })
+                                                            .catch(err => {
+                                                                reply(interaction, translations[lang]["DATABASE_ERROR"]);
+                                                                console.error(err);
+                                                            });
+                                                    }
+                                                }
+                                            });
+                                    }
+                                });
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            }).catch(err => {
+                reply(interaction, translations["fr"]["DATABASE_ERROR"] + " / " + translations["en"]["DATABASE_ERROR"]);
+                console.error(err);
+            })
     });
 
     twitchBot.login(process.env.TWITCHBOT);
-
 }

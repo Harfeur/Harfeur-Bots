@@ -25,6 +25,7 @@
     "node-twitch": "^0.4.5",
     "pg": "^8.3.0",
     "spotify-web-api-node": "^5.0.0",
+    "sprintf-js": "^1.1.2",
     "tmi.js": "^1.5.0",
     "twitch-api-v5": "^2.0.4",
     "xmlhttprequest": "^1.8.0"
