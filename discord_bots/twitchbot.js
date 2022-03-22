@@ -98,9 +98,9 @@ exports.run = () => {
                                                 "icon_url": "https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png"
                                             },
                                             "fields": [{
-                                                    "name": translations[lang]["STATUS"],
-                                                    "value": stream.title
-                                                },
+                                                "name": translations[lang]["STATUS"],
+                                                "value": stream.title
+                                            },
                                                 {
                                                     "name": translations[lang]["GAME"],
                                                     "value": stream.game_name,
@@ -120,8 +120,8 @@ exports.run = () => {
                                         });
                                         if (messageID == "0") {
                                             canal.send(`${messageLive}\n<https://www.twitch.tv/${user.login}>`, {
-                                                    "embed": embed
-                                                })
+                                                "embed": embed
+                                            })
                                                 .then(msg => {
                                                     clientpg.query(`UPDATE twitch SET messageID = '${msg.id}' WHERE channelID=${channelid} AND serverid='${serverid}';`)
                                                 })
@@ -148,9 +148,9 @@ exports.run = () => {
                                     .catch(console.error);
 
                                 twitchV2.getVideos({
-                                        user_id: channelid,
-                                        type: "archive"
-                                    })
+                                    user_id: channelid,
+                                    type: "archive"
+                                })
                                     .then(video => {
                                         video = video.data.length != 0 ? video.data[0] : null
                                         canal.messages.fetch(messageID)
@@ -322,9 +322,9 @@ exports.run = () => {
                                 });
                         }
                     }).catch(err => {
-                        console.error(err);
-                        msg.reply("Une erreur est survenue avec Twitch.");
-                    });
+                    console.error(err);
+                    msg.reply("Une erreur est survenue avec Twitch.");
+                });
             }
             return;
         }
@@ -359,11 +359,11 @@ exports.run = () => {
                                 });
                         }
                     }).catch(err => {
-                        console.error(err);
-                        msg.reply("Une erreur est survenue avec Twitch.");
-                    });
+                    console.error(err);
+                    msg.reply("Une erreur est survenue avec Twitch.");
+                });
             }
-            return;
+
         }
     });
 
@@ -373,7 +373,7 @@ exports.run = () => {
         fetchLive();
     });
 
-    function reply(interaction, message, type=4) {
+    function reply(interaction, message, type = 4) {
         twitchBot.api.interactions(interaction.id, interaction.token).callback.post({
             data: {
                 type: type,
@@ -388,11 +388,12 @@ exports.run = () => {
         if (!interaction.guild_id) {
             reply(interaction, "Ce bot ne fonctionne que dans des serveurs pour le moment.\nThis bot only works with guilds for now.");
             return;
-        };
+        }
+
         clientpg.query(`SELECT language FROM guilds WHERE guild_id='${interaction.guild_id}'`)
             .then(query => {
                 var lang = query.rowCount != 0 ? query.rows[0].language : "fr"
-                
+
                 // VERIFY ADMIN
                 var permissions = parseInt(interaction.member.permissions).toString(2);
                 if (permissions.length < 4 || permissions[permissions.length - 4] != 1) {
@@ -409,16 +410,16 @@ exports.run = () => {
                                         title: translations[lang]["SETUP_TITLE"],
                                         custom_id: 'modal_setup',
                                         components: [{
-                                                type: 1,
-                                                components: [{
-                                                    type: 4,
-                                                    style: 1,
-                                                    custom_id: 'streamer',
-                                                    label: translations[lang]["SETUP_STREAMER"],
-                                                    placeholder: 'harfeur',
-                                                    required: true
-                                                }]
-                                            },
+                                            type: 1,
+                                            components: [{
+                                                type: 4,
+                                                style: 1,
+                                                custom_id: 'streamer',
+                                                label: translations[lang]["SETUP_STREAMER"],
+                                                placeholder: 'harfeur',
+                                                required: true
+                                            }]
+                                        },
                                             {
                                                 type: 1,
                                                 components: [{
@@ -522,7 +523,7 @@ exports.run = () => {
                         case "modal_setup":
                             twitchV2.getUsers(interaction.data.components[0].components[0].value)
                                 .then(res => {
-                                    if (res.data.length == 0) {
+                                    if (!res.data || res.data.length == 0) {
                                         reply(interaction, translations[lang]["SETUP_NO_RESULT"])
                                     } else {
                                         let channelID, messageLIVE, messageFIN;
@@ -554,6 +555,9 @@ exports.run = () => {
                                                 }
                                             });
                                     }
+                                }).catch(err => {
+                                    reply(interaction, translations[lang]["DATABASE_ERROR"]);
+                                    console.error(err);
                                 });
                             break;
 
@@ -564,7 +568,7 @@ exports.run = () => {
             }).catch(err => {
                 reply(interaction, translations["fr"]["DATABASE_ERROR"] + " / " + translations["en"]["DATABASE_ERROR"]);
                 console.error(err);
-            })
+            });
     });
 
     twitchBot.login(process.env.TWITCHBOT);
