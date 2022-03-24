@@ -545,7 +545,7 @@ exports.run = () => {
 
                                                         clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${interaction.guild_id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
                                                             .then(() => {
-                                                                reply(interaction, translations[lang]["SETUP_FINISH"]);
+                                                                reply(interaction, translations[lang]["SETUP_SUCCESS"]);
                                                             })
                                                             .catch(err => {
                                                                 reply(interaction, translations[lang]["DATABASE_ERROR"]);
