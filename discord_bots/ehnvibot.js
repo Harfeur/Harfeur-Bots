@@ -131,25 +131,21 @@ exports.run = () => {
                             user_id: '31549669',
                             type: 'archive'
                         }).then(video => {
-                            if (err) console.error(err);
-                            else {
-                                video = video.data.length != 0 ? video.data[0] : null
-                                canal.messages.fetch(messageID.toString())
-                                    .then(message => {
-                                        if (message.embeds.length > 0) {
-                                            var embed = message.embeds[0]
-                                            embed.setTitle("LIVE terminé");
-                                            embed.fields = embed.fields.filter(field => field.name != "Viewers");
-                                            embed.setURL(video.url);
-                                            message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${video.url}>`, {
-                                                "embed": embed
-                                            });
-                                        } else {
-                                            message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${video.url}>`);
-                                        }
-                                    });
-
-                            }
+                            video = video.data.length != 0 ? video.data[0] : null
+                            canal.messages.fetch(messageID.toString())
+                                .then(message => {
+                                    if (message.embeds.length > 0) {
+                                        var embed = message.embeds[0]
+                                        embed.setTitle("LIVE terminé");
+                                        embed.fields = embed.fields.filter(field => field.name != "Viewers");
+                                        embed.setURL(video.url);
+                                        message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${video.url}>`, {
+                                            "embed": embed
+                                        });
+                                    } else {
+                                        message.edit(`Oh non, le LIVE est terminé :( mais tu peux revoir le replay ici : <${video.url}>`);
+                                    }
+                                });
                         }).catch(console.error);
                     }
                 })
@@ -158,7 +154,7 @@ exports.run = () => {
                     console.error(err);
                 });
         });
-    };
+    }
 
     ehnvibot.on('ready', () => {
         console.log(`Bot ${ehnvibot.user.tag} démarré !`);
