@@ -62,8 +62,6 @@ exports.run = () => {
                             var canal = serveur.channels.resolve(canalid);
                             if (canal == null || !canal.permissionsFor(twitchBot.user).has('SEND_MESSAGES')) return;
 
-                            if (serverid != "637315966631542801") return;
-
                             if (stream) {
                                 twitchV2.getUsers(channelid)
                                     .then(twitchUser => {
