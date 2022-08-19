@@ -198,7 +198,7 @@ exports.run = () => {
 
     twitchBot.on('interactionCreate', async interaction => {
         if (!interaction.guild) {
-            interaction.reply("Ce bot ne fonctionne que dans des serveurs pour le moment.\nThis bot only works with guilds for now.");
+            interaction.reply("Ce bot ne fonctionne que dans des serveurs pour le moment.\nThis bot only works with guilds for now.").catch(console.error);
             return;
         }
 
@@ -208,7 +208,7 @@ exports.run = () => {
 
                 // VERIFY ADMIN
                 if (!interaction.memberPermissions.has(Discord.PermissionsBitField.Flags.Administrator)) {
-                    interaction.reply(translations[lang]["NO_RIGHTS"]);
+                    interaction.reply(translations[lang]["NO_RIGHTS"]).catch(console.error);
                     return;
                 }
                 if (interaction.type === Discord.InteractionType.ApplicationCommand)
@@ -245,7 +245,7 @@ exports.run = () => {
                                 .setCustomId("modal_setup")
                                 .addComponents(row1, row2, row3);
 
-                            interaction.showModal(modal);
+                            interaction.showModal(modal).catch(console.error);
 
                             break;
 
@@ -254,7 +254,7 @@ exports.run = () => {
                             clientpg.query(`SELECT * FROM twitch WHERE serverid='${interaction.guild.id}';`)
                                 .then(async query => {
                                     if (query.rowCount === 0) {
-                                        interaction.reply(translations[lang]["DELETE_EMPTY"])
+                                        interaction.reply(translations[lang]["DELETE_EMPTY"]).catch(console.error);
                                         return;
                                     }
 
@@ -274,7 +274,7 @@ exports.run = () => {
 
                                     const row = new Discord.ActionRowBuilder().addComponents(menu);
 
-                                    interaction.reply({components: [row]});
+                                    interaction.reply({components: [row]}).catch(console.error);
                                 });
                             break;
 
@@ -283,10 +283,10 @@ exports.run = () => {
                             clientpg.query(`INSERT INTO guilds(guild_id, language) VALUES (${interaction.guild.id},'${newLang}')
                             ON CONFLICT (guild_id) DO UPDATE SET language = '${newLang}';`)
                                 .then(() => {
-                                    interaction.reply(translations[newLang]["LANGUAGE_UPDATE"])
+                                    interaction.reply(translations[newLang]["LANGUAGE_UPDATE"]).catch(console.error);
                                 })
                                 .catch(err => {
-                                    interaction.reply(translations[newLang]["DATABASE_ERROR"]);
+                                    interaction.reply(translations[newLang]["DATABASE_ERROR"]).catch(console.error);
                                     console.error(err);
                                 })
                             break;
@@ -299,12 +299,12 @@ exports.run = () => {
                                     interaction.update({
                                         content: translations[lang]["DELETE_SUCCESS"],
                                         components: []
-                                    });
+                                    }).catch(console.error);
                                 }).catch(err => {
                                     interaction.update({
                                         content: translations[lang]["DATABASE_ERROR"],
                                         components: []
-                                    });
+                                    }).catch(console.error);
                                     console.error(err);
                                 });
                             break;
@@ -318,7 +318,7 @@ exports.run = () => {
                             twitchV2.getUsers(interaction.fields.getTextInputValue("streamer"))
                                 .then(res => {
                                     if (!res.data || res.data.length === 0) {
-                                        interaction.reply(translations[lang]["SETUP_NO_RESULT"])
+                                        interaction.reply(translations[lang]["SETUP_NO_RESULT"]).catch(console.error);
                                     } else {
                                         let channelID, messageLIVE, messageFIN;
                                         console.log("Enregistrement en cours d'un nouveau streameur");
@@ -327,10 +327,10 @@ exports.run = () => {
                                         clientpg.query(`SELECT * FROM twitch WHERE channelid=${userId} AND serverid='${interaction.guild.id}';`)
                                             .then(query => {
                                                 if (query.rowCount !== 0) {
-                                                    interaction.reply(translations[lang]["SETUP_ALREADY"]);
+                                                    interaction.reply(translations[lang]["SETUP_ALREADY"]).catch(console.error);
                                                 } else {
                                                     if (!interaction.channel.permissionsFor(twitchBot.user).has([Discord.PermissionsBitField.Flags.SendMessages, Discord.PermissionsBitField.Flags.EmbedLinks])) {
-                                                        interaction.reply(translations[lang]["SETUP_NO_PERMISSIONS"]);
+                                                        interaction.reply(translations[lang]["SETUP_NO_PERMISSIONS"]).catch(console.error);
                                                     } else {
                                                         channelID = interaction.channel.id;
                                                         messageLIVE = interaction.fields.getTextInputValue("start").replaceAll("'", "''");
@@ -338,10 +338,10 @@ exports.run = () => {
 
                                                         clientpg.query(`INSERT INTO twitch(channelid, serverid, canalid, messagelive, messagefin) VALUES (${userId}, '${interaction.guild.id}', '${channelID}', '${messageLIVE}', '${messageFIN}');`)
                                                             .then(() => {
-                                                                interaction.reply(translations[lang]["SETUP_SUCCESS"]);
+                                                                interaction.reply(translations[lang]["SETUP_SUCCESS"]).catch(console.error);
                                                             })
                                                             .catch(err => {
-                                                                interaction.reply(translations[lang]["DATABASE_ERROR"]);
+                                                                interaction.reply(translations[lang]["DATABASE_ERROR"]).catch(console.error);
                                                                 console.error(err);
                                                             });
                                                     }
@@ -349,7 +349,7 @@ exports.run = () => {
                                             });
                                     }
                                 }).catch(err => {
-                                    interaction.reply(translations[lang]["DATABASE_ERROR"]);
+                                    interaction.reply(translations[lang]["DATABASE_ERROR"]).catch(console.error);
                                     console.error(err);
                                 });
                             break;
@@ -359,7 +359,7 @@ exports.run = () => {
                     }
                 }
             }).catch(err => {
-                interaction.reply(translations["fr"]["DATABASE_ERROR"] + " / " + translations["en"]["DATABASE_ERROR"]);
+                interaction.reply(translations["fr"]["DATABASE_ERROR"] + " / " + translations["en"]["DATABASE_ERROR"]).catch(console.error);
                 console.error(err);
             });
     });
